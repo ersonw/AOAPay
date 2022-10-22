@@ -1,0 +1,36 @@
+server:
+  port: 8000
+  servlet:
+    encoding:
+      charset: utf-8
+spring:
+  redis:
+    host: ${REDIS_HOST:172.21.72.30}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:2pmnpw47}
+#  web:
+#    resources:
+#      static-locations: /static/
+  thymeleaf:
+#    prefix: classpath:/
+    cache: false
+  data:
+    mongodb:
+      #      uri: mongodb://mongo-admin:6d2880f9f562108b@super-os:27017/?authSource=admin
+      username: ${MONGODB_USERNAME:aoapay}
+      password: ${MONGODB_PASSWORD:6d2880f9f562108b}
+      port: ${MONGODB_PORT:27017}
+      host: ${MONGODB_HOST:172.21.72.30}
+      database: ${MONGODB_DATABASE:aoapay}
+      authentication-database: ${MONGODB_AUTH_DATABASE:admin}
+logging:
+  level:
+    sdk:
+      biz:
+        info: OFF
+    com:
+      alipay:
+        api: OFF
+      github:
+        binarywang:
+          wxpay: OFF
