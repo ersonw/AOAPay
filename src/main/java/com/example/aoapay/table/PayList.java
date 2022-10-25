@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import javax.persistence.GeneratedValue;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,21 +17,10 @@ import java.util.List;
 @Document(collection = "payList")
 public class PayList {
     @Id
+    @GeneratedValue
     private String id;
     private String remark=null;
-    @Field("amountList")
-    private List<String> amountList = new ArrayList<>();
-    private int floatLength = 0;
-    private boolean enabledFloat = false;
-    private String icon = null;
-    private boolean enabled = false;
-    private int max = 0;
-    private int min = 0;
-    private int sort = 0;
-    private long limit=0L;
-    private int third = 0;
-    private long addTime=0L;
-    private long updateTime=0L;
+    private String type = null;
     private String title="";
     private String domain=null;
     private String mchId=null;
@@ -38,6 +28,16 @@ public class PayList {
     private String notifyUrl=null;
     private String secretKey=null;
     private String publicKey=null;
-    private String rootKey=null;
-    private String appPublicKey=null;
+    private List<String> callbackIp=new ArrayList<>();
+    private boolean voluntarily = false;
+    private boolean enabled = false;
+    @Field("amountList")
+    private List<Integer> amountList = new ArrayList<>();
+    private int channel = 0;
+    private int max = 0;
+    private int mini = 0;
+    private int sort = 0;
+    private long limit=0L;
+    private long addTime=0L;
+    private long updateTime=0L;
 }

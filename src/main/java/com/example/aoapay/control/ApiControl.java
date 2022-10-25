@@ -1,6 +1,7 @@
 package com.example.aoapay.control;
 
 import com.example.aoapay.data.ResponseData;
+import com.example.aoapay.data.pData;
 import com.example.aoapay.service.ApiService;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +16,12 @@ public class ApiControl {
     @Autowired
     private ApiService service;
     @GetMapping("/payList/{version}")
-    public void payList(@PathVariable("version") String version,
+    public ResponseData payList(@PathVariable("version") String version,
                                 HttpServletRequest request, HttpServletResponse response) {
-        service.payList(version,request,response);
+        return service.payList(version,request,response);
+    }
+    @PostMapping("/payList/submit")
+    public ResponseData payListSubmit(@ModelAttribute pData data,HttpServletRequest request){
+        return service.payListSubmit(data.getName(),data.getUsername(),data.getPayListId(),data.getAmount(),request);
     }
 }

@@ -34,10 +34,12 @@ public class RootFilter implements Filter {
             String contentType = request.getContentType();
             Cookie[] cookies = request.getCookies();
             String token = null;
-            for (Cookie cookie: cookies){
-                if (StringUtils.equals(cookie.getName(), "clientId")){
-                    token = cookie.getValue();
-                    break;
+            if (cookies !=null && cookies.length > 0){
+                for (Cookie cookie: cookies){
+                    if (StringUtils.equals(cookie.getName(), "clientId")){
+                        token = cookie.getValue();
+                        break;
+                    }
                 }
             }
 //            String token = request.getHeader("Token");

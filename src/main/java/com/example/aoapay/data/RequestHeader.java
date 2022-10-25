@@ -34,6 +34,10 @@ public class RequestHeader {
     private String user;
     private String client;
 
+    @Override
+    public String toString() {
+        return JSONObject.toJSONString(this);
+    }
     public Client getClient() {
         if (StringUtils.isEmpty(client)) return null;
         return JSONObject.toJavaObject(JSONObject.parseObject(client), Client.class);

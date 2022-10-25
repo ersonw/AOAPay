@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>支付跳转中....</title>
+</head>
+<body onload="_get()">
+<a id="a0001" th:href="${url}"></a>
+<!--<meta http-equiv="refresh" content="0;url=th:text="${post}"">-->
+<script type="text/javascript">
+    function _get(){
+        window.document.getElementById("a0001").click();
+    }
+</script>
+</body>
+</html>

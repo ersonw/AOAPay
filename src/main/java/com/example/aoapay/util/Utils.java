@@ -43,7 +43,7 @@ public class Utils {
         RequestHeader headers = ToolsUtil.getRequestHeaders(request);
         Client client = headers.getClient();
         if (client == null){
-            client = new Client(JSONObject.toJSONString(headers),JSONObject.toJSONString(headers));
+            client = new Client(JSONObject.toJSONString(headers));
             response.addCookie(new Cookie("clientId", client.getId()));
         }
         client.setUpdateTime(System.currentTimeMillis());
@@ -52,7 +52,7 @@ public class Utils {
     }
     public static Client addClient(HttpServletRequest request, HttpServletResponse response){
         RequestHeader headers = ToolsUtil.getRequestHeaders(request);
-        Client client = new Client(JSONObject.toJSONString(headers),JSONObject.toJSONString(headers));
+        Client client = new Client(JSONObject.toJSONString(headers));
         response.addCookie(new Cookie("clientId", client.getId()));
         self.clientDao.save(client);
         return client;

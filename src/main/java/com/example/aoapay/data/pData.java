@@ -13,6 +13,12 @@ import java.util.List;
 public  class pData  {
     public pData(){}
 
+    @ApiModelProperty(name = "payListId", value= "支付方式ID",required = false)
+    private String payListId;
+    @ApiModelProperty(name = "name", value= "姓名",required = false)
+    private String name;
+    @ApiModelProperty(name = "amount", value= "金额",required = false)
+    private Double amount;
     @ApiModelProperty(name = "username", value= "用户账号或者手机号",required = false)
     private String username;
     @ApiModelProperty(name = "password", value= "用户密码",required = false)
