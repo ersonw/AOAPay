@@ -21,6 +21,7 @@ public class PayList {
     private String id;
     private String remark=null;
     private String type = null;
+    private String typeCode = null;
     private String title="";
     private String domain=null;
     private String mchId=null;

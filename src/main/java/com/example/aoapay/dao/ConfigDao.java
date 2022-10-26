@@ -2,6 +2,7 @@ package com.example.aoapay.dao;
 
 import com.example.aoapay.config.MongoAnimal;
 import com.example.aoapay.table.Config;
+import com.example.aoapay.table.Order;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -14,8 +15,9 @@ public class ConfigDao extends MongoAnimal {
     }
     public Config findAllByVersion(String version){
         List objects = super.aggregate(super.getMatch("version",version));
-        if (objects.size() > 0) return (Config)objects.get(0);
-        return null;
+        if (objects.size() == 0) return null;
+        Object o = objects.get(0);
+        return o instanceof Config?(Config) o:null;
     }
 
     @Override
@@ -23,7 +25,7 @@ public class ConfigDao extends MongoAnimal {
         List objects = super.findAll();
         List<Config> list = new ArrayList<>();
         for (Object o : objects) {
-            list.add((Config) o);
+            if (o instanceof Config)list.add((Config) o);
         }
         return list;
     }

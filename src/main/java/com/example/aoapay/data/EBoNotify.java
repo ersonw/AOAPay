@@ -9,7 +9,7 @@ import lombok.ToString;
 @Setter
 @Getter
 @ToString(includeFieldNames = true)
-public class EBoData {
+public class EBoNotify {
 //    商务号
     private String fxid;
 //    商户订单号

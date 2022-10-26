@@ -20,6 +20,11 @@ public class ApiControl {
                                 HttpServletRequest request, HttpServletResponse response) {
         return service.payList(version,request,response);
     }
+    @GetMapping("/payList/order")
+    public ResponseData payListOrder(@RequestParam(value="page",defaultValue="1") int page,
+                                HttpServletRequest request) {
+        return service.payListOrder(page,request);
+    }
     @PostMapping("/payList/submit")
     public ResponseData payListSubmit(@ModelAttribute pData data,HttpServletRequest request){
         return service.payListSubmit(data.getName(),data.getUsername(),data.getPayListId(),data.getAmount(),request);

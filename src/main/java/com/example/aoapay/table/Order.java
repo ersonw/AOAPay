@@ -18,14 +18,16 @@ public class Order {
     public Order(){
         this.addTime = System.currentTimeMillis();
         this.orderNo = ToolsUtil.getRandom(7).toUpperCase();
-        this.outOrderNo = TimeUtil._getOrderNo();
+        this.outTradeNo = TimeUtil._getOrderNo();
     }
     @Id
     @GeneratedValue
     private String id;
     private String clientId=null;
+    private String ip=null;
+    private String header=null;
     private String payListId=null;
-    private String outOrderNo=null;
+    private String outTradeNo=null;
     private String tradeNo=null;
     private String orderNo=null;
     private double money=0;

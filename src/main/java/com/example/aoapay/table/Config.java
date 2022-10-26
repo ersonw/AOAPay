@@ -24,6 +24,7 @@ public class Config {
     private boolean disable=false;
     private String message=null;
     private String hostname=null;
+    private long timeout=0;
     private String addUserId=null;
     private String updateUserId=null;
     private long addTime=0;

@@ -1,6 +1,6 @@
 package com.example.aoapay.control;
 
-import com.example.aoapay.data.EBoData;
+import com.example.aoapay.data.EBoNotify;
 import com.example.aoapay.service.NotifyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,7 +16,7 @@ public class NotifyControl {
     @Autowired
     private NotifyService service;
     @PostMapping("/eBo")
-    public String eBo(@ModelAttribute EBoData data, HttpServletRequest request){
+    public String eBo(@ModelAttribute EBoNotify data, HttpServletRequest request){
         return service.eBo(data,request);
     }
 }

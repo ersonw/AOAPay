@@ -1,8 +1,9 @@
 package com.example.aoapay.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.example.aoapay.dao.OrderDao;
 import com.example.aoapay.dao.PayListDao;
-import com.example.aoapay.data.EBoData;
+import com.example.aoapay.data.EBoNotify;
 import com.example.aoapay.data.RequestHeader;
 import com.example.aoapay.table.Order;
 import com.example.aoapay.table.PayList;
@@ -22,7 +23,8 @@ public class NotifyService {
     private OrderDao orderDao;
     @Autowired
     private PayListDao payListDao;
-    public String eBo(EBoData data, HttpServletRequest request) {
+    public String eBo(EBoNotify data, HttpServletRequest request) {
+        log.info("艺博支付回调 {}",JSONObject.toJSONString(data));
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         if (StringUtils.isEmpty(data.getFxstatus())
                 || StringUtils.isEmpty(data.getFxid())
@@ -36,6 +38,7 @@ public class NotifyService {
         if (!isWhiteIP(payList.getCallbackIp(),header.getIp())) return "error";
         if (!data.isSign(payList.getSecretKey())) return "error";
         if (data.getFxstatus().equals("1") && !order.isTradeStatus()){
+            order.setTradeStatus(true);
             order.setTradeNo(data.getFxorder());
             order.setTotalFee(new Double(data.getFxfee()));
             order.setTradeTime(new Long(data.getFxtime()));

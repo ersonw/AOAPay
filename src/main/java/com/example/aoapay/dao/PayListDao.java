@@ -1,6 +1,7 @@
 package com.example.aoapay.dao;
 
 import com.example.aoapay.config.MongoAnimal;
+import com.example.aoapay.table.Config;
 import com.example.aoapay.table.PayList;
 import org.springframework.stereotype.Repository;
 
@@ -18,8 +19,7 @@ public class PayListDao extends MongoAnimal {
         List objects = super.findAll();
         List<PayList> list = new ArrayList<>();
         for(Object o : objects) {
-            PayList payList = (PayList) o;
-            list.add(payList);
+            if (o instanceof PayList)list.add((PayList) o);
         }
         return list;
     }
@@ -27,7 +27,7 @@ public class PayListDao extends MongoAnimal {
         List objects = super.aggregate(super.getMatch("enabled",true));
         List<PayList> list = new ArrayList<>();
         for (Object o :objects) {
-            list.add((PayList) o);
+            if (o instanceof PayList)list.add((PayList) o);
         }
         return list;
     }
@@ -37,8 +37,7 @@ public class PayListDao extends MongoAnimal {
         List objects = super.findAllById(id);
         List<PayList> list = new ArrayList<>();
         for(Object o : objects) {
-            PayList payList = (PayList) o;
-            list.add(payList);
+            if (o instanceof PayList)list.add((PayList) o);
         }
         return list;
     }
@@ -46,6 +45,6 @@ public class PayListDao extends MongoAnimal {
     @Override
     public PayList findById(String id) {
         Object o = super.findById(id);
-        return (PayList)o;
+        return o instanceof PayList?(PayList)o:null;
     }
 }

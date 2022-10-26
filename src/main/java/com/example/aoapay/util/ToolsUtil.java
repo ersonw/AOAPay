@@ -59,10 +59,58 @@ public class ToolsUtil {
         post.addObject("url",url);
         return post;
     }
+    public static ModelAndView emptyHtml(String data){
+        ModelAndView post = new ModelAndView("payHtml/empty");
+        post.addObject("data",data);
+        return post;
+    }
     public static ModelAndView waitHtml(){
         ModelAndView post = new ModelAndView("payHtml/wait");
 //        post.addObject("url",url);
         return post;
+    }
+    public static ModelAndView refreshHtml(Map<String, ?> modelMap){
+        ModelAndView post = new ModelAndView("payHtml/refresh");
+        post.addAllObjects(modelMap);
+        return post;
+    }
+    public static ModelAndView wxpayHtml(Map<String, ?> modelMap){
+        ModelAndView post = new ModelAndView("payHtml/wxpay");
+        post.addAllObjects(modelMap);
+        return post;
+    }
+    public static ModelAndView alipayHtml(Map<String, ?> modelMap){
+        ModelAndView post = new ModelAndView("payHtml/alipay");
+        post.addAllObjects(modelMap);
+        return post;
+    }
+    public static ModelAndView waitHtml(Map<String, ?> modelMap){
+        ModelAndView post = new ModelAndView("payHtml/wait_h5");
+        post.addAllObjects(modelMap);
+        return post;
+    }
+    private static boolean isNotRes(String str){
+        List<String> parts = new ArrayList<>();
+        parts.add(".js");
+        parts.add(".css");
+        parts.add(".html");
+        parts.add(".txt");
+        parts.add("jpg");
+        parts.add(".png");
+        parts.add(".gif");
+        parts.add(".svg");
+        parts.add(".ico");
+        parts.add(".jpeg");
+        parts.add(".woff2");
+        parts.add(".map");
+        for (String s: parts) {
+            if(str.endsWith(s)){
+                return true;
+            }
+        }
+//        System.out.printf(str);
+//        System.out.printf("\n");
+        return false;
     }
     @PostConstruct
     public void init(){

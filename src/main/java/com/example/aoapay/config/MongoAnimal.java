@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -46,10 +47,93 @@ public class MongoAnimal<T> {
         return aggregate(match, limit, skip,sort);
     }
     public List<T> aggregate(AggregationOperation... operations){
-//        log.info("collectionName {}",this.collectionName);
         AggregationResults<T> results = mongoTemplate.aggregate(Aggregation.newAggregation(operations), this.collectionName, this.clazz);
-//        log.error("collectionName {} results size {}",this.collectionName,results.getRawResults());
         return results.getMappedResults();
+    }
+    public Page<T> aggregate(Pageable pageable,AggregationOperation... operations){
+        AggregationResults<T> results = mongoTemplate.aggregate(Aggregation.newAggregation(operations), this.collectionName, this.clazz);
+        return new Page<T>() {
+            @Override
+            public int getTotalPages() {
+                long total = count(operations);
+                return total > 0 && total> pageable.getPageSize()?new Long(total / pageable.getPageSize()).intValue():0;
+            }
+
+            @Override
+            public long getTotalElements() {
+                return count(operations);
+            }
+
+            @Override
+            public <U> Page<U> map(Function<? super T, ? extends U> converter) {
+                return null;
+            }
+
+            @Override
+            public int getNumber() {
+                return pageable.getPageNumber();
+            }
+
+            @Override
+            public int getSize() {
+                return pageable.getPageSize();
+            }
+
+            @Override
+            public int getNumberOfElements() {
+                return 0;
+            }
+
+            @Override
+            public List<T> getContent() {
+                return results.getMappedResults();
+            }
+
+            @Override
+            public boolean hasContent() {
+                return results.getMappedResults().size() > 0;
+            }
+
+            @Override
+            public Sort getSort() {
+                return pageable.getSort();
+            }
+
+            @Override
+            public boolean isFirst() {
+                return false;
+            }
+
+            @Override
+            public boolean isLast() {
+                return false;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public boolean hasPrevious() {
+                return false;
+            }
+
+            @Override
+            public Pageable nextPageable() {
+                return null;
+            }
+
+            @Override
+            public Pageable previousPageable() {
+                return null;
+            }
+
+            @Override
+            public Iterator<T> iterator() {
+                return null;
+            }
+        };
     }
     public AggregationOperation getSort(Pageable pageable){
         return Aggregation.sort(pageable.getSort());
@@ -71,6 +155,9 @@ public class MongoAnimal<T> {
     public Criteria where(String field, String value){
         return Criteria.where(field).regex(value);
     }
+    public Criteria whereIs(String field, String value){
+        return Criteria.where(field).is(value);
+    }
     public Criteria and(Criteria... criterias){
         Criteria criteria = new Criteria();
         return criteria.andOperator(Arrays.asList(criterias));
@@ -80,7 +167,7 @@ public class MongoAnimal<T> {
         return criteria.orOperator(Arrays.asList(criterias));
     }
     public Long count(){
-        return count(getGroup());
+        return count(Aggregation.match(new Criteria()));
     }
     public AggregationOperation getGroup(){
         return getGroup("count");
@@ -95,11 +182,15 @@ public class MongoAnimal<T> {
         return group().count().as(alias);
     }
     public Long count(AggregationOperation... operations){
-        return count("count",operations);
+        return count("count", operations);
     }
     public Long count(String alias,AggregationOperation... operations){
+//        List<AggregationOperation> list = Arrays.asList(operations);
+//        list.add(getGroup(alias));
+//        AggregationResults<JSONObject> results = mongoTemplate.aggregate(Aggregation.newAggregation((AggregationOperation[]) list.toArray()), collectionName, JSONObject.class);
         AggregationResults<JSONObject> results = mongoTemplate.aggregate(Aggregation.newAggregation(operations), collectionName, JSONObject.class);
         if(results.getMappedResults().isEmpty()) return 0L;
+        System.out.println(results.getMappedResults());
         return results.getMappedResults().get(0).getLong(alias);
     }
     public List<T> findAll(){
@@ -231,5 +322,11 @@ public class MongoAnimal<T> {
         for (Object object: objects) {
             mongoTemplate.remove(JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(object)),this.clazz));
         }
+    }
+    public void remove(Criteria criteria){
+        mongoTemplate.remove(Query.query(criteria),this.clazz,this.collectionName);
+    }
+    public void deleteById(String id){
+        remove(whereIs("_id",id));
     }
 }

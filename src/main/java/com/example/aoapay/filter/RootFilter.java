@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.TimeZone;
 
-@WebFilter(filterName = "rootFilter", urlPatterns = {"/api/*"})
+@WebFilter(filterName = "rootFilter", urlPatterns = {"/api/*","/payment/*"})
 @Slf4j
 public class RootFilter implements Filter {
     private ClientDao clientDao;
