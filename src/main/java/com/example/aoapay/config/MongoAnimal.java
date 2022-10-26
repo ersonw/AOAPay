@@ -190,7 +190,7 @@ public class MongoAnimal<T> {
 //        AggregationResults<JSONObject> results = mongoTemplate.aggregate(Aggregation.newAggregation((AggregationOperation[]) list.toArray()), collectionName, JSONObject.class);
         AggregationResults<JSONObject> results = mongoTemplate.aggregate(Aggregation.newAggregation(operations), collectionName, JSONObject.class);
         if(results.getMappedResults().isEmpty()) return 0L;
-        System.out.println(results.getMappedResults());
+//        System.out.println(results.getMappedResults());
         return results.getMappedResults().get(0).getLong(alias);
     }
     public List<T> findAll(){

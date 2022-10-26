@@ -57,7 +57,7 @@ public class OrderDao extends MongoAnimal {
     }
     public Page<Order> findAllByClient(String id, int page){
         Pageable pageable = PageRequest.of(page,30, Sort.by(Sort.Direction.DESC,"addTime"));
-        List<Order> list = super.aggregate(super.getMatch(super.where("clientId",id)),super.getSort(pageable),super.getLimit(pageable.getPageSize()),super.getSkip(pageable.getOffset()));
+        List<Order> list = super.aggregate(super.getMatch(super.where("clientId",id)),super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
 //        System.out.println(list);
         long total = super.count(super.getMatch(super.where("clientId",id)),super.getGroup());
         return new Page<Order>() {
@@ -65,7 +65,7 @@ public class OrderDao extends MongoAnimal {
             public int getTotalPages() {
                 if (total == 0) return 0;
                 if (total < pageable.getPageSize())return 1;
-                double dTotal = total / pageable.getPageSize();
+                double dTotal = (total * 1D / pageable.getPageSize());
                 Long sTotal = total / pageable.getPageSize();
                 if (dTotal > sTotal) {
                     sTotal++;
