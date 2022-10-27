@@ -1,5 +1,6 @@
 package com.example.aoapay.control;
 
+import com.example.aoapay.data.DandelionNotify;
 import com.example.aoapay.data.EBoNotify;
 import com.example.aoapay.service.NotifyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,5 +19,9 @@ public class NotifyControl {
     @PostMapping("/eBo")
     public String eBo(@ModelAttribute EBoNotify data, HttpServletRequest request){
         return service.eBo(data,request);
+    }
+    @PostMapping("/dandelion")
+    public String dandelion(@ModelAttribute DandelionNotify data, HttpServletRequest request){
+        return service.dandelion(data,request);
     }
 }

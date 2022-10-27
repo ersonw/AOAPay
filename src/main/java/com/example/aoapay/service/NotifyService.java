@@ -3,10 +3,12 @@ package com.example.aoapay.service;
 import com.alibaba.fastjson.JSONObject;
 import com.example.aoapay.dao.OrderDao;
 import com.example.aoapay.dao.PayListDao;
+import com.example.aoapay.data.DandelionNotify;
 import com.example.aoapay.data.EBoNotify;
 import com.example.aoapay.data.RequestHeader;
 import com.example.aoapay.table.Order;
 import com.example.aoapay.table.PayList;
+import com.example.aoapay.util.TimeUtil;
 import com.example.aoapay.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +26,7 @@ public class NotifyService {
     @Autowired
     private PayListDao payListDao;
     public String eBo(EBoNotify data, HttpServletRequest request) {
-        log.info("艺博支付回调 {}",JSONObject.toJSONString(data));
+//        log.info("艺博支付回调 {}",JSONObject.toJSONString(data));
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         if (StringUtils.isEmpty(data.getFxstatus())
                 || StringUtils.isEmpty(data.getFxid())
@@ -41,7 +43,7 @@ public class NotifyService {
             order.setTradeStatus(true);
             order.setTradeNo(data.getFxorder());
             order.setTotalFee(new Double(data.getFxfee()));
-            order.setTradeTime(new Long(data.getFxtime()));
+            order.setTradeTime(new Long(data.getFxtime()) * 1000);
             orderDao.save(order);
         }
         return "success";
@@ -54,5 +56,27 @@ public class NotifyService {
             }
         }
         return false;
+    }
+
+    public String dandelion(DandelionNotify data, HttpServletRequest request) {
+        log.info("蒲公英支付回调 {}",JSONObject.toJSONString(data));
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        if (!DandelionNotify.isEfficient(data))  return "error";
+        Order order = orderDao.findAllByOutOrderNo(data.getOrderid());
+        if (order == null) return "error";
+        PayList payList = payListDao.findById(order.getPayListId());
+        if (payList == null) return "error";
+        if (!isWhiteIP(payList.getCallbackIp(),header.getIp())) return "error";
+        if (!data.isSign(payList.getSecretKey())) {
+            log.info("蒲公英验签失败 回调sign={}",data.getSign());
+            return "error";
+        }
+        if (data.getStatus().equals("2") && !order.isTradeStatus()){
+            order.setTradeStatus(true);
+            order.setTotalFee(new Double(data.getRealmoney()));
+            order.setTradeTime(TimeUtil.strToTime(data.getDate()));
+            orderDao.save(order);
+        }
+        return "ok";
     }
 }

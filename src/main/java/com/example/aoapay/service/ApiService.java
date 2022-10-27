@@ -9,6 +9,7 @@ import com.example.aoapay.table.Config;
 import com.example.aoapay.table.Order;
 import com.example.aoapay.table.PayList;
 import com.example.aoapay.table.ShortLink;
+import com.example.aoapay.util.DandelionUtil;
 import com.example.aoapay.util.EBoUtil;
 import com.example.aoapay.util.TimeUtil;
 import com.example.aoapay.util.ToolsUtil;
@@ -43,7 +44,7 @@ public class ApiService {
     private ShortLinkDao shortLinkDao;
 
     public static final int PAY_CHANNEL_EBO = 1;
-    public static final int PAY_CHANNEL_PUGONGYING = 2;
+    public static final int PAY_CHANNEL_DANDELION = 2;
 
     public ResponseData payList(String version, HttpServletRequest request, HttpServletResponse response) {
 //        addPayList();
@@ -151,7 +152,7 @@ public class ApiService {
         order.setStartStatus(true);
         order.setUpdateTime(System.currentTimeMillis());
         orderDao.save(order);
-        try{
+        try {
             return handlePayment(order, payList, link.getShortLink());
         } catch (Exception e) {
             log.error("handlePayment ERROR {}", e.getMessage());
@@ -167,36 +168,38 @@ public class ApiService {
                 if (payurl != null) {
                     return ToolsUtil.getHtml(payurl);
                 }
+            case PAY_CHANNEL_DANDELION:
+                String pageaddress = DandelionUtil.submit(order, payList, sLink);
+                if (pageaddress != null) {
+                    return ToolsUtil.getHtml(pageaddress);
+                }
         }
         return ToolsUtil.errorHtml("渠道不存在！");
     }
 
     public ResponseData payListOrder(int page, HttpServletRequest request) {
+//        orderDao.deleteAllByTradeStatus(false);
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
-        try{
+        try {
             if (header.getClient() == null) throw new Exception("客户端未初始化");
             page--;
             if (page < 0) page = 0;
-            Page<Order> orderPage = orderDao.findAllByClient(header.getClient().getId(),page);
-//            System.out.println(orderPage.getContent());
+            Page<Order> orderPage = orderDao.findAllByClient(header.getClient().getId(), page);
             JSONArray array = new JSONArray();
             for (Order order : orderPage.getContent()) {
-//                if (o instanceof Order){
-//                    Order order = o;
-                    JSONObject json = new JSONObject();
-//                o.put("id",order.getOrderNo());
-                    json.put("id",order.getOutTradeNo());
-                    json.put("amount",String.format("%.2f", order.getMoney()));
-                    json.put("nickname",order.getUsername());
-                    json.put("totalFee",String.format("%.2f", order.getTotalFee()));
-                    json.put("status",order.isStatus());
-                    array.add(json);
-//                }
+                JSONObject json = new JSONObject();
+//                json.put("id", order.getOrderNo());
+                json.put("id", order.getOutTradeNo());
+                json.put("amount", String.format("%.2f", order.getMoney()));
+                json.put("username", order.getUsername());
+                json.put("totalFee", String.format("%.2f", order.getTotalFee()));
+                json.put("status", order.isStatus());
+                array.add(json);
             }
             JSONObject object = ResponseData.object("list", array);
-            object.put("total",orderPage.getTotalPages());
+            object.put("total", orderPage.getTotalPages());
             return ResponseData.success(object);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             log.error("Error {}", e.getMessage());
             return ResponseData.error(e.getMessage() + ",请先刷新网页重试！");

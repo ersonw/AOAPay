@@ -58,7 +58,9 @@ public class TimeUtil {
         }
         return 0L;
     }
-
+    public static String timeToStrHMS(long time) {
+        return new SimpleDateFormat("HH:mm:ss").format(new Date(time));
+    }
     public static long strToDateTime(String str) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {

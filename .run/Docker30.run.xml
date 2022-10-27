@@ -2,7 +2,7 @@
   <configuration default="false" name="Docker30" type="docker-deploy" factoryName="dockerfile" server-name="Docker30">
     <deployment type="dockerfile">
       <settings>
-        <option name="imageTag" value="1350815230/aoapay" />
+        <option name="imageTag" value="ersonw/aoapay" />
         <option name="containerName" value="aoapay" />
         <option name="portBindings">
           <list>

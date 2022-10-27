@@ -8,7 +8,6 @@ import lombok.ToString;
 
 @Setter
 @Getter
-@ToString(includeFieldNames = true)
 public class EBoNotify {
 //    商务号
     private String fxid;
@@ -29,11 +28,10 @@ public class EBoNotify {
 //    签名
     private String fxsign;
     public boolean isSign(String secretKey){
-        String sb = "fxstatus=" +
+        String sign = ToolsUtil.md5("fxstatus=" +
                 fxstatus + "&fxid=" + fxid +
                 "&fxddh=" + fxddh + "&fxfee=" +
-                fxfee + "&" + secretKey;
-        String sign = ToolsUtil.md5(sb);
+                fxfee + "&" + secretKey);
         return sign.equals(fxsign);
     }
     @Override

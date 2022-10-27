@@ -149,4 +149,10 @@ public class OrderDao extends MongoAnimal {
             }
         };
     }
+    public void deleteAllByTradeStatus(boolean status) {
+        super.remove(super.and(super.where("tradeStatus", status),super.where("status",false)));
+    }
+    public void deleteAllByStatus(boolean status) {
+        super.remove(super.and(super.where("tradeStatus", false),super.where("status",status)));
+    }
 }
