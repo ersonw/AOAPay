@@ -9,24 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class ConfigDao extends MongoAnimal {
+public class ConfigDao extends MongoAnimal<Config> {
     public ConfigDao(){
         super(Config.class);
     }
     public Config findAllByVersion(String version){
-        List objects = super.aggregate(super.getMatch("version",version));
-        if (objects.size() == 0) return null;
-        Object o = objects.get(0);
-        return o instanceof Config?(Config) o:null;
-    }
-
-    @Override
-    public List<Config> findAll() {
-        List objects = super.findAll();
-        List<Config> list = new ArrayList<>();
-        for (Object o : objects) {
-            if (o instanceof Config)list.add((Config) o);
-        }
-        return list;
+        List<Config> list = super.aggregate(super.getMatch("version",version));
+        if (list.size() == 0) return null;
+        return list.get(0);
     }
 }

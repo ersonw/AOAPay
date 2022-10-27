@@ -15,24 +15,9 @@ import java.util.List;
 import java.util.function.Function;
 
 @Repository
-public class OrderDao extends MongoAnimal {
+public class OrderDao extends MongoAnimal<Order> {
     public OrderDao(){
         super(Order.class);
-    }
-
-    @Override
-    public Order findById(String id) {
-        return (Order)super.findById(id);
-    }
-
-    @Override
-    public List findAllById(String id) {
-        List objects = super.findAllById(id);
-        List<Order> list = new ArrayList<>();
-        for(Object o : objects) {
-            if (o instanceof Order)list.add((Order) o);
-        }
-        return list;
     }
     public Long countAllByPayListId(String id){
         return super.count(super.getMatch("payListId",id),super.getGroup());
@@ -50,10 +35,9 @@ public class OrderDao extends MongoAnimal {
         return super.count(super.getMatch("payListId",id),super.getSum("totalFee"));
     }
     public Order findAllByOutOrderNo(String outOrderNo){
-        List objects = super.aggregate(super.getMatch("outTradeNo",outOrderNo));
-        if (objects.size() == 0) return null;
-        Object object = objects.get(0);
-        return object instanceof Order?(Order) object:null;
+        List<Order> list = super.aggregate(super.getMatch("outTradeNo",outOrderNo));
+        if (list.size() == 0) return null;
+        return list.get(0);
     }
     public Page<Order> findAllByClient(String id, int page){
         Pageable pageable = PageRequest.of(page,30, Sort.by(Sort.Direction.DESC,"addTime"));
@@ -66,11 +50,11 @@ public class OrderDao extends MongoAnimal {
                 if (total == 0) return 0;
                 if (total < pageable.getPageSize())return 1;
                 double dTotal = (total * 1D / pageable.getPageSize());
-                Long sTotal = total / pageable.getPageSize();
+                long sTotal = total / pageable.getPageSize();
                 if (dTotal > sTotal) {
                     sTotal++;
                 }
-                return sTotal.intValue();
+                return (int) sTotal;
             }
 
             @Override

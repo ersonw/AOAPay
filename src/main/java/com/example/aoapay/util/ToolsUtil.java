@@ -3,6 +3,7 @@ package com.example.aoapay.util;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.aoapay.data.RequestHeader;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -38,6 +39,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 @Component
+@Slf4j
 public class ToolsUtil {
     private static ToolsUtil self;
     public static final int TIME_OUT = 30;
@@ -312,7 +314,8 @@ public class ToolsUtil {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error doPost {}\nurl: {} \n {}",ex.getMessage(),url,JSONObject.toJSONString(map));
+//            ex.printStackTrace();
             //throw new Exception();
         }
         return result;

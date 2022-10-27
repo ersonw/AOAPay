@@ -9,42 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class PayListDao extends MongoAnimal {
+public class PayListDao extends MongoAnimal<PayList> {
     public PayListDao(){
         super(PayList.class);
     }
-
-    @Override
-    public List<PayList> findAll() {
-        List objects = super.findAll();
-        List<PayList> list = new ArrayList<>();
-        for(Object o : objects) {
-            if (o instanceof PayList)list.add((PayList) o);
-        }
-        return list;
-    }
     public List<PayList> findAllByEnable(){
-        List objects = super.aggregate(super.getMatch("enabled",true));
-        List<PayList> list = new ArrayList<>();
-        for (Object o :objects) {
-            if (o instanceof PayList)list.add((PayList) o);
-        }
-        return list;
-    }
-
-    @Override
-    public List<PayList> findAllById(String id) {
-        List objects = super.findAllById(id);
-        List<PayList> list = new ArrayList<>();
-        for(Object o : objects) {
-            if (o instanceof PayList)list.add((PayList) o);
-        }
-        return list;
-    }
-
-    @Override
-    public PayList findById(String id) {
-        Object o = super.findById(id);
-        return o instanceof PayList?(PayList)o:null;
+        return super.aggregate(super.getMatch("enabled",true));
     }
 }

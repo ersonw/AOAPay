@@ -8,25 +8,18 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class ShortLinkDao extends MongoAnimal {
+public class ShortLinkDao extends MongoAnimal<ShortLink> {
     public ShortLinkDao(){
         super(ShortLink.class);
     }
-
-    @Override
-    public ShortLink findById(String id) {
-        return (ShortLink)super.findById(id);
-    }
     public ShortLink findByShortLink(String id){
-        List objects = super.aggregate(super.getMatch(super.where("shortLink",id)));
-        if (objects.size() == 0) return  null;
-        Object object = objects.get(0);
-        return object instanceof ShortLink ?(ShortLink) object:null;
+        List<ShortLink> list = super.aggregate(super.getMatch(super.where("shortLink",id)));
+        if (list.size() == 0) return  null;
+        return list.get(0);
     }
     public ShortLink findByClient(String id){
-        List objects = super.aggregate(super.getMatch(super.where("clientId",id)));
-        if (objects.size() == 0) return  null;
-        Object object = objects.get(0);
-        return object instanceof ShortLink ?(ShortLink) object:null;
+        List<ShortLink> list = super.aggregate(super.getMatch(super.where("clientId",id)));
+        if (list.size() == 0) return  null;
+        return list.get(0);
     }
 }

@@ -80,17 +80,18 @@ public class ApiService {
         PayList payList = new PayList();
         payList.setAmountList(Arrays.asList(100, 300, 500, 1000));
         payList.setAddTime(System.currentTimeMillis());
-        payList.setChannel(PAY_CHANNEL_EBO);
+        payList.setChannel(PAY_CHANNEL_DANDELION);
         payList.setEnabled(true);
-        payList.setDomain("https://www.ybpay88.com/Pay");
-        payList.setMchId("100242");
-        payList.setSecretKey("wHUMaVliOJGDHLUzAGVPhulZVRQPhzPo");
-        payList.setType("wxpay");
-        payList.setTitle("艺博微信话费");
+        payList.setDomain("http://107.150.125.149:19306/deposit");
+        payList.setMchId("aoawin");
+        payList.setSecretKey("2b2ae2e8b99ba8e68bd8d73b09eb74c2");
+        payList.setType("unionpay");
+        payList.setTitle("蒲公英卡对卡");
+        payList.setTypeCode("5");
         payList.setLimit(0);
         payList.setMax(10000);
         payList.setMini(1);
-        payList.setNotifyUrl(configs.get(0).getHostname() + "/api/notify");
+        payList.setNotifyUrl(configs.get(0).getHostname() + "/api/notify/dandelion");
         payList.setCallbackUrl(configs.get(0).getHostname() + "/s/");
         payListDao.save(payList);
     }

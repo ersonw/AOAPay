@@ -22,7 +22,6 @@ public class AdminFilter implements Filter {
     @Override
     public void init(FilterConfig filterConfig){
         authDao = Utils.getAuthDao();
-//        TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.of("+8")));
         TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
     }
 

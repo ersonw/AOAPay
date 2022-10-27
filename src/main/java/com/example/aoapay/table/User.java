@@ -28,7 +28,7 @@ public class User {
     private String avatar=null;
     private String password=null;
     private String salt=null;
-    private List<String> roles=new ArrayList<>();
+    private String rolesId = null;
     private boolean admin =false;
     private boolean superAdmin =false;
     private Long  addTime=0L;
