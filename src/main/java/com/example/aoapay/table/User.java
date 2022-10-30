@@ -31,8 +31,8 @@ public class User {
     private String rolesId = null;
     private boolean admin =false;
     private boolean superAdmin =false;
-    private Long  addTime=0L;
-    private Long updateTime = 0L;
+    private Long  addTime=System.currentTimeMillis();
+    private Long updateTime = System.currentTimeMillis();
     @Transient
     private String token;
     public User() {

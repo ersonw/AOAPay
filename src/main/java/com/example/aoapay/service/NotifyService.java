@@ -59,7 +59,7 @@ public class NotifyService {
     }
 
     public String dandelion(DandelionNotify data, HttpServletRequest request) {
-        log.info("蒲公英支付回调 {}",JSONObject.toJSONString(data));
+//        log.info("蒲公英支付回调 {}",JSONObject.toJSONString(data));
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         if (!DandelionNotify.isEfficient(data))  return "error";
         Order order = orderDao.findAllByOutOrderNo(data.getOrderid());
@@ -73,7 +73,7 @@ public class NotifyService {
         }
         if (data.getStatus().equals("2") && !order.isTradeStatus()){
             order.setTradeStatus(true);
-            order.setTotalFee(new Double(data.getRealmoney()));
+            if (StringUtils.isNotEmpty(data.getRealmoney()))order.setTotalFee(new Double(data.getRealmoney()));
             order.setTradeTime(TimeUtil.strToTime(data.getDate()));
             orderDao.save(order);
         }

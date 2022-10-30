@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Objects;
+
 @Setter
 @Getter
 public class DandelionNotify {
@@ -29,9 +31,9 @@ public class DandelionNotify {
 //    真实金额
     private String realmoney;
     public boolean isSign(String secretKey){
-        String sSign = ToolsUtil.md5(secretKey+mid+orderid+money+remark+types+status+TimeUtil.timeToStrHMS(TimeUtil.strToTime(date)));
-        System.out.println("生成sign:"+sSign);
-        return sSign.equals(sign);
+        String sSign = ToolsUtil.md5PHP(secretKey+mid+orderid+money+remark+types+status+TimeUtil.timeToStrHMS(TimeUtil.strToTime(date)));
+//        System.out.println("生成sign:"+sSign);
+        return Objects.equals(sSign, sign);
     }
     public static boolean isEfficient(DandelionNotify data){
         JSONObject object = JSONObject.parseObject(JSONObject.toJSONString(data));

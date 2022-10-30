@@ -35,6 +35,7 @@ public class ShortLinkService {
     public void link(String id, HttpServletRequest request, HttpServletResponse response) {
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         ShortLink link = shortLinkDao.findByShortLink(id);
+//        System.out.println(link);
         try{
             if (link==null) {
                 response.sendError(404);
@@ -54,7 +55,11 @@ public class ShortLinkService {
                 shortLinkDao.save(link);
             }
             shortLinkRecordDao.save(new ShortLinkRecord(link.getId(), JSONObject.toJSONString(header)));
-            response.addCookie(new Cookie("clientId", link.getClientId()));
+//            response.addCookie(new Cookie("clientId", ""));
+            Cookie cookie = new Cookie("clientId", link.getClientId());
+            cookie.setPath("/");
+//            cookie.setDomain("");
+            response.addCookie(cookie);
             response.sendRedirect(link.getUrl());
         }catch(Exception e){
             log.info(e.getMessage());
@@ -88,6 +93,26 @@ public class ShortLinkService {
                 if (!hostname.endsWith("/")) hostname +="/";
             }
             return hostname+link.getShortLink();
+        }
+        return null;
+    }
+
+    public Object greaterLink(String clientId) {
+        List<Config> configs = configDao.findAll();
+        if (configs.size() > 0){
+            ShortLink link = shortLinkDao.findByClient(clientId);
+            if (link == null){
+                link = new ShortLink(null,clientId);
+                shortLinkDao.save(link);
+            }
+            String hostname = configs.get(0).getHostname();
+            if (StringUtils.isEmpty(hostname)) {
+                hostname = "/";
+            }else{
+                if (!hostname.startsWith("http")) hostname = "http://" + hostname;
+                if (!hostname.endsWith("/")) hostname +="/";
+            }
+            return hostname+"s/"+link.getShortLink();
         }
         return null;
     }

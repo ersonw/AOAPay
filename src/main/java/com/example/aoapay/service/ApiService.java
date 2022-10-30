@@ -156,30 +156,36 @@ public class ApiService {
         try {
             return handlePayment(order, payList, link.getShortLink());
         } catch (Exception e) {
-            log.error("handlePayment ERROR {}", e.getMessage());
+            log.error("payment ERROR {}", e.getMessage());
             orderDao.deleteById(order.getId());
             return ToolsUtil.errorHtml("渠道无法使用!");
         }
     }
 
     public ModelAndView handlePayment(Order order, PayList payList, String sLink) throws Exception {
-        switch (payList.getChannel()) {
-            case PAY_CHANNEL_EBO:
-                String payurl = EBoUtil.submit(order, payList, sLink);
-                if (payurl != null) {
-                    return ToolsUtil.getHtml(payurl);
-                }
-            case PAY_CHANNEL_DANDELION:
-                String pageaddress = DandelionUtil.submit(order, payList, sLink);
-                if (pageaddress != null) {
-                    return ToolsUtil.getHtml(pageaddress);
-                }
+        try{
+            switch (payList.getChannel()) {
+                case PAY_CHANNEL_EBO:
+                    String payurl = EBoUtil.submit(order, payList, sLink);
+                    if (payurl != null) {
+                        return ToolsUtil.getHtml(payurl);
+                    }
+                case PAY_CHANNEL_DANDELION:
+                    String pageaddress = DandelionUtil.submit(order, payList, sLink);
+                    if (pageaddress != null) {
+                        return ToolsUtil.getHtml(pageaddress);
+                    }
+            }
+            throw new Exception("渠道不存在！");
+        }catch (Exception e) {
+//            log.error("handlePayment ERROR {}", e.getMessage());
+            throw new Exception("payment "+e.getMessage());
         }
-        return ToolsUtil.errorHtml("渠道不存在！");
     }
 
     public ResponseData payListOrder(int page, HttpServletRequest request) {
 //        orderDao.deleteAllByTradeStatus(false);
+//        orderDao.deleteAllByTradeStatus(false,TimeUtil.getHourZero());
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         try {
             if (header.getClient() == null) throw new Exception("客户端未初始化");
@@ -205,5 +211,9 @@ public class ApiService {
             log.error("Error {}", e.getMessage());
             return ResponseData.error(e.getMessage() + ",请先刷新网页重试！");
         }
+    }
+
+    public void test() {
+//        System.out.println(ToolsUtil.md5PHP("2b2ae2e8b99ba8e68bd8d73b09eb74c2aoawin20221028141850320100.00https://pay.icecology.com/api/notify/dandelion(测试)15china"));
     }
 }

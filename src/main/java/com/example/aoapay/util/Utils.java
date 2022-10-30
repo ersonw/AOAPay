@@ -53,7 +53,10 @@ public class Utils {
     public static Client addClient(HttpServletRequest request, HttpServletResponse response){
         RequestHeader headers = ToolsUtil.getRequestHeaders(request);
         Client client = new Client(JSONObject.toJSONString(headers));
-        response.addCookie(new Cookie("clientId", client.getId()));
+        Cookie cookie = new Cookie("clientId", client.getId());
+        cookie.setPath("/");
+//            cookie.setDomain("");
+        response.addCookie(cookie);
         self.clientDao.save(client);
         return client;
     }

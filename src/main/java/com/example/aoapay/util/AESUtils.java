@@ -2,6 +2,7 @@ package com.example.aoapay.util;
 
 
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import sun.misc.BASE64Decoder;
@@ -24,6 +25,7 @@ import java.security.SecureRandom;
  * @date 2017年9月11日 下午5:48:17
  * @version V1.0
  */
+@Slf4j
 public class AESUtils {
 
 
@@ -53,7 +55,7 @@ public class AESUtils {
             return (new Base64().encodeToString(encrypted));//此处使用BASE64做转码功能，同时能起到2次加密的作用。
         } catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException | BadPaddingException | InvalidKeyException e) {
 //            e.printStackTrace();
-            System.out.println(e);
+            log.error("ERROR Encrypt {}",e.getMessage());
         }
         return null;
     }
@@ -91,10 +93,11 @@ public class AESUtils {
                 byte[] original = cipher.doFinal(encrypted1);
                 return new String(original, StandardCharsets.UTF_8);
             } catch (Exception e) {
-                System.out.println(e.toString());
+//                log.error("ERROR Decrypt {}\n {}",e.getMessage(), sSrc);
             }
         } catch (Exception ex) {
-            System.out.println(ex.toString());
+//            System.out.println(ex.toString());
+//            log.error("ERROR Decrypt first {}",ex.getMessage());
         }
         return null;
     }

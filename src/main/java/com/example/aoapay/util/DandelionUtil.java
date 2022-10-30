@@ -27,20 +27,19 @@ public class DandelionUtil {
         data.put("sname",order.getClientId());
         data.put("sign",  getSign(data,payList));
         String result = ToolsUtil.doPost(payList.getDomain(), data);
-//            System.out.println(result);
         if (StringUtils.isEmpty(result)) throw new Exception("result null");
         JSONObject object = JSONObject.parseObject(result);
         if (object == null)throw new Exception(result);
-        if (object.getInteger("status") != 1) throw new Exception(result);
+//        System.out.println(JSONObject.toJSONString(data));
+//        System.out.println(result);
+        if (object.getInteger("code") != 1) throw new Exception(result);
         log.info("蒲公英返回 {}",object.get("data"));
         return object.getString("pageaddress");
-//        } catch (Exception e) {
-////            e.printStackTrace();
-//            log.error("EBo ERROR {}", e.getMessage());
-//            return null;
-//        }
     }
     public static String getSign(Map<String, String> data, PayList payList){
-        return ToolsUtil.md5(payList.getSecretKey()+payList.getMchId()+data.get("orderid")+payList.getNotifyUrl()+data.get("remark")+data.get("types")+data.get("country"));
+        String sign = payList.getSecretKey()+data.get("mid")+data.get("orderid")+
+                data.get("money")+data.get("returnurl")+data.get("remark")+data.get("types")+
+                data.get("country");
+        return ToolsUtil.md5PHP(sign);
     }
 }

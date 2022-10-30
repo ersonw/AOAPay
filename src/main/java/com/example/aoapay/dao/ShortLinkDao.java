@@ -13,12 +13,12 @@ public class ShortLinkDao extends MongoAnimal<ShortLink> {
         super(ShortLink.class);
     }
     public ShortLink findByShortLink(String id){
-        List<ShortLink> list = super.aggregate(super.getMatch(super.where("shortLink",id)));
+        List<ShortLink> list = super.aggregate(super.getMatch(super.where("shortLink").is(id)));
         if (list.size() == 0) return  null;
         return list.get(0);
     }
     public ShortLink findByClient(String id){
-        List<ShortLink> list = super.aggregate(super.getMatch(super.where("clientId",id)));
+        List<ShortLink> list = super.aggregate(super.getMatch(super.where("clientId").regex(id)));
         if (list.size() == 0) return  null;
         return list.get(0);
     }

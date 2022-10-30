@@ -28,6 +28,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -44,6 +45,8 @@ public class ToolsUtil {
     private static ToolsUtil self;
     public static final int TIME_OUT = 30;
     public static final int MAX_Black = 3;
+    private static final char[] HEX_CHARS = { '0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', };
 
     public static ModelAndView errorHtml(String msg){
         ModelAndView error = new ModelAndView("payHtml/error");
@@ -359,6 +362,36 @@ public class ToolsUtil {
             return null;
         }
         return strret;
+    }
+    public static String asHex(byte hash[]) {
+        char buf[] = new char[hash.length * 2];
+        for (int i = 0, x = 0; i < hash.length; i++) {
+            buf[x++] = HEX_CHARS[(hash[i] >>> 4) & 0xf];
+            buf[x++] = HEX_CHARS[hash[i] & 0xf];
+        }
+        return new String(buf);
+    }
+    public static String escapeExprSpecialWord(String keyword) {
+        if (StringUtils.isNotBlank(keyword)) {
+            String[] fbsArr = {"\\", "$", "(", ")", "*", "+", ".", "[", "]", "?", "^", "{", "}", "|"};
+            for (String key : fbsArr) {
+                if (keyword.contains(key)) {
+                    keyword = keyword.replace(key, "\\" + key);
+                }
+            }
+        }
+        return keyword;
+    }
+    public static String md5PHP(String str) {
+        try {
+            byte[] bytesOfMessage = str.getBytes("UTF-8");
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] thedigest = md.digest(bytesOfMessage);
+            return asHex(thedigest);
+        }catch (Exception e) {
+            log.info("md5PHP {}", e.getMessage());
+            return null;
+        }
     }
     public static String md5(String plainText) {
         StringBuffer buf = null;

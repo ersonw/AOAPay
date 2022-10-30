@@ -2,13 +2,16 @@ package com.example.aoapay.dao;
 
 import com.example.aoapay.config.MongoAnimal;
 import com.example.aoapay.table.Order;
+import com.example.aoapay.util.ToolsUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Repository;
 
+import javax.tools.Tool;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -44,97 +47,25 @@ public class OrderDao extends MongoAnimal<Order> {
         List<Order> list = super.aggregate(super.getMatch(super.where("clientId",id)),super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
 //        System.out.println(list);
         long total = super.count(super.getMatch(super.where("clientId",id)),super.getGroup());
-        return new Page<Order>() {
-            @Override
-            public int getTotalPages() {
-                if (total == 0) return 0;
-                if (total < pageable.getPageSize())return 1;
-                double dTotal = (total * 1D / pageable.getPageSize());
-                long sTotal = total / pageable.getPageSize();
-                if (dTotal > sTotal) {
-                    sTotal++;
-                }
-                return (int) sTotal;
-            }
-
-            @Override
-            public long getTotalElements() {
-                return total;
-            }
-
-            @Override
-            public <U> Page<U> map(Function<? super Order, ? extends U> converter) {
-                return null;
-            }
-
-            @Override
-            public int getNumber() {
-                return pageable.getPageNumber();
-            }
-
-            @Override
-            public int getSize() {
-                return pageable.getPageSize();
-            }
-
-            @Override
-            public int getNumberOfElements() {
-                return 0;
-            }
-
-            @Override
-            public List<Order> getContent() {
-                return list;
-            }
-
-            @Override
-            public boolean hasContent() {
-                return list.size()>0;
-            }
-
-            @Override
-            public Sort getSort() {
-                return pageable.getSort();
-            }
-
-            @Override
-            public boolean isFirst() {
-                return false;
-            }
-
-            @Override
-            public boolean isLast() {
-                return false;
-            }
-
-            @Override
-            public boolean hasNext() {
-                return false;
-            }
-
-            @Override
-            public boolean hasPrevious() {
-                return false;
-            }
-
-            @Override
-            public Pageable nextPageable() {
-                return null;
-            }
-
-            @Override
-            public Pageable previousPageable() {
-                return null;
-            }
-
-            @Override
-            public Iterator<Order> iterator() {
-                return null;
-            }
-        };
+        return super.newPage(pageable, list, total);
     }
+    public Page<Order> findAllByTitle(String title, Pageable pageable){
+        AggregationOperation mach = super.getMatch(
+                super.or(
+                        super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
+                        super.where("outTradeNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
+                )
+        );
+        List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
+        long total = super.count(mach,super.getGroup());
+        return super.newPage(pageable, list, total);
+    }
+
     public void deleteAllByTradeStatus(boolean status) {
         super.remove(super.and(super.where("tradeStatus", status),super.where("status",false)));
+    }
+    public void deleteAllByTradeStatus(boolean status, long time) {
+        super.remove(super.and(super.where("tradeStatus", status),super.where("status",false),super.where("addTime").lte(time)));
     }
     public void deleteAllByStatus(boolean status) {
         super.remove(super.and(super.where("tradeStatus", false),super.where("status",status)));

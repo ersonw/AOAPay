@@ -21,4 +21,10 @@ public class UserDao extends MongoAnimal<User> {
     public boolean isSuperAdmin(String id) {
         return super.aggregate(super.getMatch(super.and(super.where("superAdmin",true),super.where("_id",id)))).size() > 0;
     }
+
+    public User findByUsername(String username) {
+        List<User> list = super.aggregate(super.getMatch(super.where("username",username)));
+        if (list.size() == 0) return null;
+        return list.get(0);
+    }
 }

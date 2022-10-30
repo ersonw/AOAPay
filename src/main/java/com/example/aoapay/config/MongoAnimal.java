@@ -1,6 +1,7 @@
 package com.example.aoapay.config;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.aoapay.table.Order;
 import com.example.aoapay.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,29 +40,88 @@ public class MongoAnimal<T> {
         this.clazz = clazz;
         this.collectionName = collectionName;
     }
-    public List<T> aggregate(Criteria criteria, Pageable pageable){
-        AggregationOperation limit = Aggregation.limit(pageable.getPageSize());
-        AggregationOperation skip = Aggregation.skip(pageable.getOffset());
-        AggregationOperation sort = Aggregation.sort(pageable.getSort());
-        AggregationOperation match = Aggregation.match(criteria);
-        return aggregate(match, limit, skip,sort);
-    }
     public List<T> aggregate(AggregationOperation... operations){
         AggregationResults<T> results = mongoTemplate.aggregate(Aggregation.newAggregation(operations), this.collectionName, this.clazz);
         return results.getMappedResults();
     }
-    public Page<T> aggregate(Pageable pageable,AggregationOperation... operations){
-        AggregationResults<T> results = mongoTemplate.aggregate(Aggregation.newAggregation(operations), this.collectionName, this.clazz);
+    public AggregationOperation getSort(Pageable pageable){
+        return getSort(pageable.getSort());
+    }
+    public AggregationOperation getSort(Sort sort){
+        return Aggregation.sort(sort);
+    }
+    public AggregationOperation getLimit(int limit){
+        return Aggregation.limit(limit);
+    }
+    public AggregationOperation getSkip(long skip){
+        return Aggregation.skip(skip);
+    }
+    public AggregationOperation getMatch(String field, Object value){
+        return getMatch(where(field,value));
+    }public AggregationOperation getMatch(Criteria criteria){
+        return Aggregation.match(criteria);
+    }
+    public Criteria where(String field, Object value){
+        return Criteria.where(field).is(value);
+    }
+    public Criteria where(String field){
+        return Criteria.where(field);
+    }
+    public Criteria where(String field, String value){
+        return Criteria.where(field).is(value);
+    }
+    public Criteria whereIs(String field, String value){
+        return Criteria.where(field).is(value);
+    }
+    public Criteria and(Criteria... criterias){
+        Criteria criteria = new Criteria();
+        return criteria.andOperator(Arrays.asList(criterias));
+    }
+    public Criteria or(Criteria... criterias){
+        Criteria criteria = new Criteria();
+        return criteria.orOperator(Arrays.asList(criterias));
+    }
+    public AggregationOperation getGroup(){
+        return getGroup("count");
+    }
+    public AggregationOperation getSum(String field){
+        return getSum(field,"count");
+    }
+    public AggregationOperation getSum(String field,String alias){
+        return group().sum(field).as(alias);
+    }
+    public AggregationOperation getGroup(String alias){
+        return group().count().as(alias);
+    }
+    public Long count(AggregationOperation... operations){
+        return count("count", operations);
+    }
+    public Long count(String alias,AggregationOperation... operations){AggregationResults<JSONObject> results = mongoTemplate.aggregate(Aggregation.newAggregation(operations), collectionName, JSONObject.class);
+        if(results.getMappedResults().isEmpty()) return 0L;
+        return results.getMappedResults().get(0).getLong(alias);
+    }
+    public List<T> findAll(){
+        AggregationOperation limit = Aggregation.limit(3000);
+        AggregationOperation sort = Aggregation.sort(Sort.Direction.DESC, "addTime");
+        return aggregate(sort,limit);
+    }
+    protected Page<T> newPage(Pageable pageable, List<T> list, long total) {
         return new Page<T>() {
             @Override
             public int getTotalPages() {
-                long total = count(operations);
-                return total > 0 && total> pageable.getPageSize()?new Long(total / pageable.getPageSize()).intValue():0;
+                if (total == 0) return 0;
+                if (total < pageable.getPageSize())return 1;
+                double dTotal = (total * 1D / pageable.getPageSize());
+                long sTotal = total / pageable.getPageSize();
+                if (dTotal > sTotal) {
+                    sTotal++;
+                }
+                return (int) sTotal;
             }
 
             @Override
             public long getTotalElements() {
-                return count(operations);
+                return total;
             }
 
             @Override
@@ -86,12 +146,12 @@ public class MongoAnimal<T> {
 
             @Override
             public List<T> getContent() {
-                return results.getMappedResults();
+                return list;
             }
 
             @Override
             public boolean hasContent() {
-                return results.getMappedResults().size() > 0;
+                return list.size()>0;
             }
 
             @Override
@@ -134,155 +194,14 @@ public class MongoAnimal<T> {
                 return null;
             }
         };
-    }
-    public AggregationOperation getSort(Pageable pageable){
-        return Aggregation.sort(pageable.getSort());
-    }
-    public AggregationOperation getLimit(int limit){
-        return Aggregation.limit(limit);
-    }
-    public AggregationOperation getSkip(long skip){
-        return Aggregation.skip(skip);
-    }
-    public AggregationOperation getMatch(String field, Object value){
-        return getMatch(where(field,value));
-    }public AggregationOperation getMatch(Criteria criteria){
-        return Aggregation.match(criteria);
-    }
-    public Criteria where(String field, Object value){
-        return Criteria.where(field).is(value);
-    }
-    public Criteria where(String field, String value){
-        return Criteria.where(field).regex(value);
-    }
-    public Criteria whereIs(String field, String value){
-        return Criteria.where(field).is(value);
-    }
-    public Criteria and(Criteria... criterias){
-        Criteria criteria = new Criteria();
-        return criteria.andOperator(Arrays.asList(criterias));
-    }
-    public Criteria or(Criteria... criterias){
-        Criteria criteria = new Criteria();
-        return criteria.orOperator(Arrays.asList(criterias));
-    }
-    public Long count(){
-        return count(Aggregation.match(new Criteria()));
-    }
-    public AggregationOperation getGroup(){
-        return getGroup("count");
-    }
-    public AggregationOperation getSum(String field){
-        return getSum(field,"count");
-    }
-    public AggregationOperation getSum(String field,String alias){
-        return group().sum(field).as(alias);
-    }
-    public AggregationOperation getGroup(String alias){
-        return group().count().as(alias);
-    }
-    public Long count(AggregationOperation... operations){
-        return count("count", operations);
-    }
-    public Long count(String alias,AggregationOperation... operations){
-//        List<AggregationOperation> list = Arrays.asList(operations);
-//        list.add(getGroup(alias));
-//        AggregationResults<JSONObject> results = mongoTemplate.aggregate(Aggregation.newAggregation((AggregationOperation[]) list.toArray()), collectionName, JSONObject.class);
-        AggregationResults<JSONObject> results = mongoTemplate.aggregate(Aggregation.newAggregation(operations), collectionName, JSONObject.class);
-        if(results.getMappedResults().isEmpty()) return 0L;
-//        System.out.println(results.getMappedResults());
-        return results.getMappedResults().get(0).getLong(alias);
-    }
-    public List<T> findAll(){
-        AggregationOperation limit = Aggregation.limit(3000);
-        AggregationOperation sort = Aggregation.sort(Sort.Direction.DESC, "addTime");
-        return aggregate(sort,limit);
     }
     public Page<T> findAll(Pageable pageable){
         AggregationOperation limit = Aggregation.limit(pageable.getPageSize());
+        AggregationOperation skip = Aggregation.skip(pageable.getOffset());
         AggregationOperation sort = Aggregation.sort(pageable.getSort());
         AggregationResults<T> results = mongoTemplate.aggregate(Aggregation.newAggregation(limit,sort), collectionName, this.clazz);
-        return new Page<T>() {
-            @Override
-            public int getTotalPages() {
-                return new Long(count() / pageable.getPageSize()).intValue();
-            }
-
-            @Override
-            public long getTotalElements() {
-                return pageable.getPageSize();
-            }
-
-            @Override
-            public <U> Page<U> map(Function<? super T, ? extends U> converter) {
-                return null;
-            }
-
-            @Override
-            public int getNumber() {
-                return 0;
-            }
-
-            @Override
-            public int getSize() {
-                return 0;
-            }
-
-            @Override
-            public int getNumberOfElements() {
-                return 0;
-            }
-
-            @Override
-            public List<T> getContent() {
-                return results.getMappedResults();
-            }
-
-            @Override
-            public boolean hasContent() {
-                return false;
-            }
-
-            @Override
-            public Sort getSort() {
-                return pageable.getSort();
-            }
-
-            @Override
-            public boolean isFirst() {
-                return false;
-            }
-
-            @Override
-            public boolean isLast() {
-                return false;
-            }
-
-            @Override
-            public boolean hasNext() {
-                return false;
-            }
-
-            @Override
-            public boolean hasPrevious() {
-                return false;
-            }
-
-            @Override
-            public Pageable nextPageable() {
-                return null;
-            }
-
-            @Override
-            public Pageable previousPageable() {
-                return null;
-            }
-
-            @Override
-            public Iterator<T> iterator() {
-                return null;
-            }
-        };
+        long total = count(getGroup());
+        return newPage(pageable,results.getMappedResults(),total);
     }
     public List<T> findAllById(String id){
         AggregationOperation limit = Aggregation.limit(3000);
@@ -303,24 +222,23 @@ public class MongoAnimal<T> {
         criteria.andOperator(criteriaList);
         AggregationOperation match = Aggregation.match(criteria);
         List<T> list = aggregate(match, sort,limit);
-//        System.out.println(list);
         if (list.size() == 0) return null;
         return list.get(0);
     }
-    public void save(Object object) {
-        mongoTemplate.save(JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(object)),this.clazz));
+    public void save(T object) {
+        mongoTemplate.save(object);
     }
-    public void save(List<Object> objects) {
+    public void saveAll(List<T> objects) {
         for (Object object: objects) {
-            mongoTemplate.remove(JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(object)),this.clazz));
+            mongoTemplate.remove(object);
         }
     }
-    public void delete(Object object) {
-        mongoTemplate.remove(JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(object)),this.clazz));
+    public void delete(T object) {
+        mongoTemplate.remove(object);
     }
-    public void delete(List<Object> objects) {
+    public void deleteAll(List<T> objects) {
         for (Object object: objects) {
-            mongoTemplate.remove(JSONObject.toJavaObject(JSONObject.parseObject(JSONObject.toJSONString(object)),this.clazz));
+            mongoTemplate.remove(object);
         }
     }
     public void remove(Criteria criteria){
@@ -328,5 +246,10 @@ public class MongoAnimal<T> {
     }
     public void deleteById(String id){
         remove(whereIs("_id",id));
+    }
+    public void deleteAllById(List<String> ids){
+        for (String id: ids) {
+            remove(whereIs("_id",id));
+        }
     }
 }

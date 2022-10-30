@@ -3,6 +3,8 @@ package com.example.aoapay.control;
 import com.example.aoapay.data.ResponseData;
 import com.example.aoapay.data.pData;
 import com.example.aoapay.service.ApiService;
+import com.example.aoapay.util.MD5Util;
+import com.example.aoapay.util.ToolsUtil;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -28,5 +30,10 @@ public class ApiControl {
     @PostMapping("/payList/submit")
     public ResponseData payListSubmit(@ModelAttribute pData data,HttpServletRequest request){
         return service.payListSubmit(data.getName(),data.getUsername(),data.getPayListId(),data.getAmount(),request);
+    }
+    @GetMapping("/test")
+    public String test(){
+        service.test();
+        return "ok";
     }
 }

@@ -22,4 +22,7 @@ public class MD5Util {
     public String getMD5(String base) {
         return DigestUtils.md5DigestAsHex(base.getBytes());
     }
+    public static String MD5(String base) {
+        return DigestUtils.md5DigestAsHex(base.getBytes());
+    }
 }
