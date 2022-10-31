@@ -38,6 +38,7 @@ public class Order {
     private boolean startStatus=false;
     private boolean status=false;
     private String updateUserId=null;
+    private String updateUserIp=null;
     private long addTime=0;
     private long updateTime=0;
     private long noticeTime=0;

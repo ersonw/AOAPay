@@ -70,4 +70,58 @@ public class OrderDao extends MongoAnimal<Order> {
     public void deleteAllByStatus(boolean status) {
         super.remove(super.and(super.where("tradeStatus", false),super.where("status",status)));
     }
+
+    public Page<Order> findAllByTitleCompleted(String title, Pageable pageable) {
+        AggregationOperation mach = super.getMatch(
+                super.and(
+                        super.or(
+                                super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
+                                super.where("username").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
+                        ),
+                        super.where("status",true)
+                )
+        );
+        List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
+        long total = super.count(mach,super.getGroup());
+        return super.newPage(pageable, list, total);
+    }
+
+    public Page<Order> findAllByCompleted(Pageable pageable) {
+        AggregationOperation mach = super.getMatch(
+                super.where("status",true)
+        );
+        List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
+        long total = super.count(mach,super.getGroup());
+        return super.newPage(pageable, list, total);
+    }
+
+    public Page<Order> findAllByTitleProcessed(String title, Pageable pageable) {
+        AggregationOperation mach = super.getMatch(
+                super.and(
+                        super.or(
+                                super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
+                                super.where("outTradeNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
+                        ),
+                        super.and(
+                                super.where("status",false),
+                                super.where("tradeStatus",true)
+                        )
+                )
+        );
+        List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
+        long total = super.count(mach,super.getGroup());
+        return super.newPage(pageable, list, total);
+    }
+
+    public Page<Order> findAllByProcessed(Pageable pageable) {
+        AggregationOperation mach = super.getMatch(
+                super.and(
+                        super.where("status",false),
+                        super.where("tradeStatus",true)
+                )
+        );
+        List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
+        long total = super.count(mach,super.getGroup());
+        return super.newPage(pageable, list, total);
+    }
 }

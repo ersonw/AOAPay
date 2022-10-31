@@ -43,6 +43,8 @@ public class AdminService {
     @Autowired
     private ShortLinkRecordDao shortLinkRecordDao;
     @Autowired
+    private UserDao userDao;
+    @Autowired
     private UserService userService;
     @Autowired
     private ShortLinkService shortLinkService;
@@ -112,6 +114,90 @@ public class AdminService {
             JSONArray array = new JSONArray();
             for (Order order: orderPage.getContent()) {
                 array.add(getOrder(order));
+            }
+            JSONObject object = new JSONObject();
+            object.put("total", orderPage.getTotalElements());
+            object.put("list",array);
+            return ResponseData.success(object);
+        }catch (Exception e){
+//            e.printStackTrace();
+            return ResponseData.error(e.getMessage());
+        }
+    }
+
+    public ResponseData basicOrderConfirm(String id, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            Order order = orderDao.findById(id);
+            if (order == null) throw new Exception("订单不存在!");
+            if (order.isStatus()) throw new Exception("订单已处理过!");
+            order.setStatus(true);
+            order.setUpdateTime(System.currentTimeMillis());
+            order.setUpdateUserId(user.getId());
+            order.setUpdateUserIp(header.getIp());
+            orderDao.save(order);
+            return ResponseData.success("处理成功!",getOrder(order));
+        }catch (Exception e){
+            return ResponseData.error(e.getMessage());
+        }
+    }
+
+    public ResponseData completedOrderList(String title, int page, int limit, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        page--;
+        if (page < 0) page = 0;
+        if(limit < 1) limit = 1;
+        try{
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            Page<Order> orderPage;
+            Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
+            if (StringUtils.isNotEmpty(title)) {
+                orderPage = orderDao.findAllByTitleCompleted(title,pageable);
+            }else {
+                orderPage = orderDao.findAllByCompleted(pageable);
+            }
+            JSONArray array = new JSONArray();
+            for (Order order: orderPage.getContent()) {
+                JSONObject object = getOrder(order);
+                User updateUser = userDao.findById(order.getUpdateUserId());
+                if (updateUser != null)object.put("updateUser", updateUser.getUsername());
+                object.put("updateUserIp",order.getUpdateUserIp());
+                array.add(object);
+            }
+            JSONObject object = new JSONObject();
+            object.put("total", orderPage.getTotalElements());
+            object.put("list",array);
+            return ResponseData.success(object);
+        }catch (Exception e){
+//            e.printStackTrace();
+            return ResponseData.error(e.getMessage());
+        }
+    }
+    public ResponseData processedOrderList(String title, int page, int limit, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        page--;
+        if (page < 0) page = 0;
+        if(limit < 1) limit = 1;
+        try{
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            Page<Order> orderPage;
+            Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
+            if (StringUtils.isNotEmpty(title)) {
+                orderPage = orderDao.findAllByTitleProcessed(title,pageable);
+            }else {
+                orderPage = orderDao.findAllByProcessed(pageable);
+            }
+            JSONArray array = new JSONArray();
+            for (Order order: orderPage.getContent()) {
+                JSONObject object = getOrder(order);
+                array.add(object);
             }
             JSONObject object = new JSONObject();
             object.put("total", orderPage.getTotalElements());

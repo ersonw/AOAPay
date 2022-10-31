@@ -50,9 +50,18 @@ public class ShortLinkService {
                     return;
                 }
                 Client client = new Client(JSONObject.toJSONString(header));
+                if (StringUtils.isNotEmpty(link.getUserId())) client.setUserId(link.getUserId());
                 clientDao.save(client);
                 link.setClientId(client.getId());
                 shortLinkDao.save(link);
+            }else{
+                Client client = clientDao.findById(link.getClientId());
+                if (client == null){
+                    client = new Client(JSONObject.toJSONString(header));
+                    client.setId(link.getClientId());
+                }
+                client.setUpdateHeader(JSONObject.toJSONString(header));
+                clientDao.save(client);
             }
             shortLinkRecordDao.save(new ShortLinkRecord(link.getId(), JSONObject.toJSONString(header)));
 //            response.addCookie(new Cookie("clientId", ""));
@@ -103,6 +112,7 @@ public class ShortLinkService {
             ShortLink link = shortLinkDao.findByClient(clientId);
             if (link == null){
                 link = new ShortLink(null,clientId);
+                link.setUrl("/order");
                 shortLinkDao.save(link);
             }
             String hostname = configs.get(0).getHostname();

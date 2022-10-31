@@ -39,7 +39,9 @@ public  class pData  {
     private long seek;
 
     @ApiModelProperty(name = "id", value= "唯一ID",required = false)
-    private long id;
+    private String id;
+    @ApiModelProperty(name = "ids", value= "唯一ID",required = false)
+    private List<String> ids;
     @ApiModelProperty(name = "toId", value= "目标ID",required = false)
     private long toId;
 
