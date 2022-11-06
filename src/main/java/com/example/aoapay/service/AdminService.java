@@ -6,6 +6,7 @@ import com.example.aoapay.dao.*;
 import com.example.aoapay.data.RequestHeader;
 import com.example.aoapay.data.ResponseData;
 import com.example.aoapay.table.Order;
+import com.example.aoapay.table.PayList;
 import com.example.aoapay.table.User;
 import com.example.aoapay.util.MD5Util;
 import com.example.aoapay.util.ToolsUtil;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -48,6 +50,8 @@ public class AdminService {
     private UserService userService;
     @Autowired
     private ShortLinkService shortLinkService;
+    @Autowired
+    private ApiService apiService;
 
 
     public String menu(HttpServletRequest request) {
@@ -205,6 +209,188 @@ public class AdminService {
             return ResponseData.success(object);
         }catch (Exception e){
 //            e.printStackTrace();
+            return ResponseData.error(e.getMessage());
+        }
+    }
+
+    public ResponseData channelChange(String id, String type, String title, String domain, String mchId, String callbackUrl, String notifyUrl, String secretKey, boolean voluntarily, Integer channel, int max, int mini, int sort, Long limit, String typeCode, List<Integer> amountList,HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            PayList list = payListDao.findById(id);
+            if (list == null) throw new Exception("渠道不存在!");
+            list.setTitle(title);
+            if (user.isSuperAdmin()){
+                list.setType(type);
+                list.setChannel(channel);
+                list.setTypeCode(typeCode);
+
+                list.setMchId(mchId);
+                list.setDomain(domain);
+                list.setCallbackUrl(callbackUrl);
+                list.setNotifyUrl(notifyUrl);
+                list.setSecretKey(secretKey);
+            }
+            list.setVoluntarily(voluntarily);
+            list.setAmountList(amountList);
+            list.setMax(max);
+            list.setMini(mini);
+            list.setSort(sort);
+            list.setLimit(limit);
+            list.setUpdateTime(System.currentTimeMillis());
+            payListDao.save(list);
+            return ResponseData.success("修改成功!",getChannel(list,user.isSuperAdmin()));
+        }catch (Exception e){
+            return ResponseData.error(e.getMessage());
+        }
+    }
+    public JSONObject getChannel(PayList list, boolean fully){
+        JSONObject object = new JSONObject();
+        object.put("id",list.getId());
+        object.put("type",list.getType());
+        object.put("title",list.getTitle());
+        if (fully){
+            object.put("domain",list.getDomain());
+            object.put("mchId",list.getMchId());
+            object.put("callbackUrl",list.getCallbackUrl());
+            object.put("notifyUrl",list.getNotifyUrl());
+            object.put("secretKey",list.getSecretKey());
+            object.put("channel",list.getChannel());
+        }
+        object.put("typeCode",list.getTypeCode());
+        object.put("voluntarily",list.isVoluntarily());
+        object.put("amountList",list.getAmountList());
+        object.put("enabled",list.isEnabled());
+        object.put("max",list.getMax());
+        object.put("mini",list.getMini());
+        object.put("sort",list.getSort());
+        object.put("limit",list.getLimit());
+        object.put("addTime",list.getAddTime());
+        object.put("updateTime",list.getUpdateTime());
+        return object;
+    }
+
+    public ResponseData channelEnable(String id, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            PayList list = payListDao.findById(id);
+            if (list == null) throw new Exception("渠道不存在!");
+            list.setEnabled(!list.isEnabled());
+            list.setUpdateTime(System.currentTimeMillis());
+            payListDao.save(list);
+            return ResponseData.success("切换状态成功!",getChannel(list,user.isSuperAdmin()));
+        }catch (Exception e){
+            return ResponseData.error(e.getMessage());
+        }
+    }
+
+    public ResponseData channelList(String title, int page, int limit, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        page--;
+        if (page < 0) page = 0;
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            Page<PayList> listPage;
+            Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"sort"));
+            if (StringUtils.isNotEmpty(title)){
+                listPage = payListDao.findAllByTitle(title,pageable);
+            }else {
+                listPage = payListDao.findAll(pageable);
+            }
+            JSONArray array = new JSONArray();
+            for (PayList list : listPage.getContent()){
+                array.add(getChannel(list,user.isSuperAdmin()));
+            }
+            JSONObject object = new JSONObject();
+            object.put("total", listPage.getTotalElements());
+            object.put("list", array);
+            return ResponseData.success(object);
+        }catch (Exception e){
+            return ResponseData.error(e.getMessage());
+        }
+    }
+
+    public ResponseData channelEnableAll(List<String> ids, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            List<PayList> list = payListDao.findAllByIds(ids);
+            if (list.isEmpty()) throw new Exception("渠道不存在!");
+            JSONArray array = new JSONArray();
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).setEnabled(!list.get(i).isEnabled());
+                array.add(getChannel(list.get(i),user.isSuperAdmin()));
+            }
+            payListDao.saveAll(list);
+            return ResponseData.success("全部切换状态成功!",array);
+        }catch (Exception e){
+            return ResponseData.error(e.getMessage());
+        }
+    }
+
+    public ResponseData channelAdd(String type, String title, String domain, String mchId, String callbackUrl, String notifyUrl, String secretKey, boolean voluntarily, Integer channel, Integer max, Integer mini, Integer sort, Long limit, String typeCode, List<Integer> amountList, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isSuperAdmin()) throw new Exception("没有添加权限");
+            PayList list = new PayList();
+            list.setTitle(title);
+            list.setType(type);
+            list.setChannel(channel);
+            list.setTypeCode(typeCode);
+            list.setMchId(mchId);
+            list.setDomain(domain);
+            list.setCallbackUrl(callbackUrl);
+            list.setNotifyUrl(notifyUrl);
+            list.setSecretKey(secretKey);
+            list.setVoluntarily(voluntarily);
+            list.setAmountList(amountList);
+            list.setMax(max);
+            list.setMini(mini);
+            list.setSort(sort);
+            list.setLimit(limit);
+            list.setUpdateTime(System.currentTimeMillis());
+            list.setAddTime(System.currentTimeMillis());
+            if (StringUtils.isEmpty(type)
+                    && StringUtils.isEmpty(title)
+                    && StringUtils.isEmpty(domain)
+                    && StringUtils.isEmpty(mchId)
+                    && StringUtils.isEmpty(callbackUrl)
+                    && StringUtils.isEmpty(notifyUrl)
+                    && StringUtils.isEmpty(secretKey)
+                    && StringUtils.isEmpty(typeCode)
+            ){
+                throw new Exception("参数不允许为空！");
+            }
+            payListDao.save(list);
+            return ResponseData.success("添加成功!",getChannel(list,user.isSuperAdmin()));
+        }catch (Exception e){
+//            e.printStackTrace();
+            return ResponseData.error(""+e.getMessage());
+        }
+    }
+
+    public ResponseData channelRemoveAll(List<String> ids, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isSuperAdmin()) throw new Exception("没有权限");
+            List<PayList> list = payListDao.findAllByIds(ids);
+            if (list.isEmpty()) throw new Exception("渠道不存在!");
+            payListDao.deleteAll(list);
+            return ResponseData.success("全部删除成功!");
+        }catch (Exception e){
             return ResponseData.error(e.getMessage());
         }
     }

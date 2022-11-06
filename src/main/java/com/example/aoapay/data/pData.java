@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -40,6 +41,39 @@ public  class pData  {
 
     @ApiModelProperty(name = "id", value= "唯一ID",required = false)
     private String id;
+    @ApiModelProperty(name = "type", value= "类型",required = false)
+    private String type;
+    @ApiModelProperty(name = "title", value= "标题",required = false)
+    private String title;
+    @ApiModelProperty(name = "domain", value= "域名",required = false)
+    private String domain;
+    @ApiModelProperty(name = "mchId", value= "商户ID",required = false)
+    private String mchId;
+    @ApiModelProperty(name = "callbackUrl", value= "同步返回地址",required = false)
+    private String callbackUrl;
+    @ApiModelProperty(name = "notifyUrl", value= "异步返回地址",required = false)
+    private String notifyUrl;
+    @ApiModelProperty(name = "secretKey", value= "商户密钥",required = false)
+    private String secretKey;
+    @ApiModelProperty(name = "voluntarily", value= "可编辑",required = false)
+    private boolean voluntarily;
+    @ApiModelProperty(name = "enabled", value= "开启",required = false)
+    private boolean enabled;
+    @ApiModelProperty(name = "channel", value= "渠道",required = false)
+    private int channel;
+    @ApiModelProperty(name = "max", value= "最大",required = false)
+    private int max;
+    @ApiModelProperty(name = "mini", value= "最小",required = false)
+    private int mini;
+    @ApiModelProperty(name = "sort", value= "排序",required = false)
+    private int sort;
+    @ApiModelProperty(name = "limit", value= "限制",required = false)
+    private long limit;
+    @ApiModelProperty(name = "typeCode", value= "类型代码",required = false)
+    private String typeCode;
+    @ApiModelProperty(name = "amountList", value= "固定金额",required = false)
+    private List<Integer> amountList = new ArrayList<>();
+
     @ApiModelProperty(name = "ids", value= "唯一ID",required = false)
     private List<String> ids;
     @ApiModelProperty(name = "toId", value= "目标ID",required = false)
@@ -54,11 +88,6 @@ public  class pData  {
     private String oldValue;
     @ApiModelProperty(name = "newValue", value= "新数据",required = false)
     private String newValue;
-
-    @ApiModelProperty(name = "callbackUrl", value= "同步返回地址",required = false)
-    private String callbackUrl;
-    @ApiModelProperty(name = "notifyUrl", value= "异步返回地址",required = false)
-    private String notifyUrl;
 
 
     @ApiModelProperty(name = "files", value= "文件列表",required = false)

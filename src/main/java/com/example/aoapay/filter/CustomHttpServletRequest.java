@@ -1,5 +1,7 @@
 package com.example.aoapay.filter;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.aoapay.util.AESUtils;
 import com.example.aoapay.util.ToolsUtil;
@@ -25,20 +27,32 @@ public class CustomHttpServletRequest extends HttpServletRequestWrapper {
     public CustomHttpServletRequest(HttpServletRequest request){
         super(request);
         this.params.putAll(request.getParameterMap());
-        this.body = ToolsUtil.getRequestBody(request);
-        if (body == null) return;
+        String content = ToolsUtil.getRequestBody(request);
+        if (content == null) return;
         if (StringUtils.isNotEmpty(request.getContentType()) && request.getContentType().contains(MediaType.APPLICATION_JSON_VALUE)){
-            String decode =  AESUtils.Decrypt(this.body);
+            String decode =  AESUtils.Decrypt(content);
             if (decode != null){
-                this.body = decode;
+                content = decode;
             }
-            JSONObject object = JSONObject.parseObject(this.body);
+            JSONObject object = JSONObject.parseObject(content);
             for (String key : object.keySet()) {
                 if (object.get(key) != null){
                     this.addParameter(key, object.get(key));
+//                    System.out.printf("%s == %b \n",key,(object.get(key) instanceof JSONArray));
+                    if (object.get(key) instanceof JSONArray){
+                        JSONArray array = (JSONArray) object.get(key);
+                        if (array.size() > 0){
+                            this.addParameter(key, array.toArray());
+                        }
+                    }
                 }
             }
+        }else{
+            this.body = content;
         }
+    }
+    public static <T> List<T> getList(JSONArray array, Class<T> clazz){
+        return JSONObject.parseArray(array.toJSONString(),clazz);
     }
     public void addHeader(String name,String value){
         headers.put(name, value);
@@ -111,15 +125,29 @@ public class CustomHttpServletRequest extends HttpServletRequestWrapper {
     }
 
 
-    public void addParameter(String name, Object value) {
-        if (value != null) {
-            if (value instanceof String[]) {
-                params.put(name, (String[]) value);
-            } else if (value instanceof String) {
-                params.put(name, new String[]{(String) value});
-            } else {
-                params.put(name, new String[]{String.valueOf(value)});
+//    public void addParameter(String name, Object value) {
+//        System.out.println(name);
+//        if (value != null) {
+//            if (value instanceof String[]) {
+//                params.put(name, (String[]) value);
+//            } else if (value instanceof String) {
+//                params.put(name, new String[]{(String) value});
+//            } else {
+//                params.put(name, new String[]{String.valueOf(value)});
+//            }
+//        }
+//    }
+    public void addParameter(String name, Object... objects) {
+        if (objects.length > 0) {
+            String[] values = new String[objects.length];
+            for (int i = 0; i < objects.length; i++) {
+                if (objects[i] instanceof String){
+                    values[i] = (String) objects[i];
+                }else{
+                    values[i] = objects[i].toString();
+                }
             }
+            params.put(name, values);
         }
     }
 

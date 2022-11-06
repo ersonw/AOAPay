@@ -2,6 +2,7 @@ package com.example.aoapay.config;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.aoapay.table.Order;
+import com.example.aoapay.table.PayList;
 import com.example.aoapay.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,7 +200,7 @@ public class MongoAnimal<T> {
         AggregationOperation limit = Aggregation.limit(pageable.getPageSize());
         AggregationOperation skip = Aggregation.skip(pageable.getOffset());
         AggregationOperation sort = Aggregation.sort(pageable.getSort());
-        AggregationResults<T> results = mongoTemplate.aggregate(Aggregation.newAggregation(limit,sort), collectionName, this.clazz);
+        AggregationResults<T> results = mongoTemplate.aggregate(Aggregation.newAggregation(skip,limit,sort), collectionName, this.clazz);
         long total = count(getGroup());
         return newPage(pageable,results.getMappedResults(),total);
     }
@@ -251,5 +252,17 @@ public class MongoAnimal<T> {
         for (String id: ids) {
             remove(whereIs("_id",id));
         }
+    }
+
+    protected AggregationOperation getSort(Sort.Direction sort, String... fields) {
+        return Aggregation.sort(sort,fields);
+    }
+
+    public List<T> findAllByIds(List<String> ids) {
+        Criteria[] criteriaList = new Criteria[ids.size()];
+        for (int i = 0; i < ids.size(); i++) {
+            criteriaList[i] = where("_id",ids.get(i));
+        }
+        return aggregate(getMatch(or(criteriaList)));
     }
 }

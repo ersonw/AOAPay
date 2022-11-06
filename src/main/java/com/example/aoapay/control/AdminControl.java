@@ -53,4 +53,56 @@ public class AdminControl {
     public ResponseData basicOrderConfirm(@ModelAttribute pData data, HttpServletRequest request){
         return service.basicOrderConfirm(data.getId(),request);
     }
+    @GetMapping("/channel/list")
+    public ResponseData channelList(
+            @RequestParam(value="title", required = false) String title,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "limit",defaultValue = "10") int limit,
+            HttpServletRequest request
+    ){
+        return service.channelList(title,page,limit,request);
+    }
+    @GetMapping("/channel/enable")
+    public ResponseData channelEnable(
+            @RequestParam(value="id", required = false) String id,
+            HttpServletRequest request
+    ){
+        return service.channelEnable(id,request);
+    }
+    @PostMapping("/channel/enable")
+    public ResponseData channelEnableAll(
+            @ModelAttribute pData data,
+            HttpServletRequest request
+    ){
+        return service.channelEnableAll(data.getIds(),request);
+    }
+    @PostMapping("/channel/change")
+    public ResponseData channelChange(
+            @ModelAttribute pData data,
+            HttpServletRequest request
+    ){
+        return service.channelChange(data.getId(),data.getType(),data.getTitle(),
+                data.getDomain(),data.getMchId(),data.getCallbackUrl(),
+                data.getNotifyUrl(),data.getSecretKey(),data.isVoluntarily(),
+                data.getChannel(),data.getMax(),data.getMini(),data.getSort(),
+                data.getLimit(),data.getTypeCode(),data.getAmountList(),request);
+    }
+    @PostMapping("/channel/add")
+    public ResponseData channelAdd(
+            @ModelAttribute pData data,
+            HttpServletRequest request
+    ){
+        return service.channelAdd(data.getType(),data.getTitle(),
+                data.getDomain(),data.getMchId(),data.getCallbackUrl(),
+                data.getNotifyUrl(),data.getSecretKey(),data.isVoluntarily(),
+                data.getChannel(),data.getMax(),data.getMini(),data.getSort(),
+                data.getLimit(),data.getTypeCode(),data.getAmountList(),request);
+    }
+    @PostMapping("/channel/remove")
+    public ResponseData channelRemoveAll(
+            @ModelAttribute pData data,
+            HttpServletRequest request
+    ){
+        return service.channelRemoveAll(data.getIds(),request);
+    }
 }

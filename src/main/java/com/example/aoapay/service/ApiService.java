@@ -45,7 +45,6 @@ public class ApiService {
 
     public static final int PAY_CHANNEL_EBO = 1;
     public static final int PAY_CHANNEL_DANDELION = 2;
-
     public ResponseData payList(String version, HttpServletRequest request, HttpServletResponse response) {
 //        addPayList();
         Config config = configDao.findAllByVersion(version);
