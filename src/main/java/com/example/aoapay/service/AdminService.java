@@ -7,6 +7,7 @@ import com.example.aoapay.data.RequestHeader;
 import com.example.aoapay.data.ResponseData;
 import com.example.aoapay.table.*;
 import com.example.aoapay.util.MD5Util;
+import com.example.aoapay.util.TimeUtil;
 import com.example.aoapay.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,7 @@ import java.util.List;
 @Service
 public class AdminService {
 
+    private static final int SHORT_LINK_MAX = 5;
     @Autowired
     private ClientDao clientDao;
     @Autowired
@@ -45,9 +47,9 @@ public class AdminService {
     @Autowired
     private UserDao userDao;
     @Autowired
-    private UserService userService;
-    @Autowired
     private ShortLinkService shortLinkService;
+    @Autowired
+    private UserService userService;
     @Autowired
     private ApiService apiService;
     @Autowired
@@ -98,7 +100,7 @@ public class AdminService {
         object.put("addTime",order.getAddTime());
         object.put("updateTime",order.getUpdateTime());
         object.put("ip",order.getIp());
-        object.put("link",shortLinkService.greaterLink(order.getClientId()));
+        object.put("link",shortLinkService.greaterLink(order.getClientId(),order.getUserId()));
         return object;
     }
     public ResponseData basicOrderList(String title, int page, int limit, HttpServletRequest request) {
@@ -640,6 +642,10 @@ public class AdminService {
             object.put("ip", header.getIp());
             if (admin){
                 object.put("serverName", header.getServerName());
+                User user = userDao.findById(client.getUserId());
+                if (user != null){
+                    object.put("username", user.getUsername());
+                }
                 object.put("url", header.getUrl());
             }
         }
@@ -703,8 +709,28 @@ public class AdminService {
         try {
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
+            if (shortLinkDao.countAllByInactivated(user.getId()) > SHORT_LINK_MAX){
+                throw new Exception("已超出最大未激活生成数 "+SHORT_LINK_MAX+"条");
+            }
+            ShortLink link = new ShortLink(user.getId(),null);
+            while (shortLinkDao.countAllByShortLink(link.getShortLink()) > 0){
+                link.setShortLink(ToolsUtil.getRandom(7));
+            }
+            shortLinkDao.save(link);
+            return ResponseData.success("生成邀请链接成功!",ResponseData.object("url",shortLinkService.greaterUrl(link)));
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
 
-            return ResponseData.success("生成邀请链接成功!");
+    public ResponseData basicOrderClean(HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            orderDao.deleteAllByTradeStatus(false, TimeUtil.getTodayZero());
+            return ResponseData.success("全部清理成功!");
         }catch (Exception e){
             return ResponseData.error("错误提示："+e.getMessage());
         }

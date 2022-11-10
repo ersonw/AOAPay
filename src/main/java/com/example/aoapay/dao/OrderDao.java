@@ -146,4 +146,10 @@ public class OrderDao extends MongoAnimal<Order> {
         long total = super.count(mach,super.getGroup());
         return super.newPage(pageable, list, total);
     }
+
+    public long countAllByOrderNo(String orderNo) {
+        return super.count(super.getMatch(
+                super.where("orderNo").is(orderNo)
+        ),super.getGroup());
+    }
 }

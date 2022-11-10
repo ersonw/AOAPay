@@ -206,6 +206,10 @@ public class ToolsUtil {
         data.setUri(request.getRequestURI());
         data.setUrl(request.getRequestURL().toString());
         data.setSchema(request.getScheme());
+        if (StringUtils.isNotEmpty(request.getHeader("X-Real-IP"))) data.setIp(request.getHeader("X-Real-IP"));
+        if (StringUtils.isNotEmpty(request.getHeader("X-Forwarded-Proto"))) data.setSchema(request.getHeader("X-Forwarded-Proto"));
+//        if (StringUtils.isNotEmpty(request.getHeader("X-Forwarded-For"))) data.setServerName((request.getHeader("X-Forwarded-For")));
+        if (StringUtils.isNotEmpty(request.getHeader("Host"))) data.setServerName((request.getHeader("Host")));
         data.setQuery(request.getQueryString());
         data.setReferer(request.getHeader("referer"));
         data.setUser(request.getHeader("user"));

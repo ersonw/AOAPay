@@ -120,12 +120,21 @@ public class ApiService {
             order.setName(name);
             order.setUsername(username);
             order.setClientId(header.getClient().getId());
+            order.setUserId(header.getClient().getUserId());
             order.setPayListId(payListId);
             order.setMoney(amount);
             order.setIp(header.getIp());
             order.setHeader(JSONObject.toJSONString(header));
+            while(orderDao.countAllByOrderNo(order.getOrderNo()) > 0){
+                order.setOrderNo(ToolsUtil.getRandom(7).toUpperCase());
+            }
             orderDao.save(order);
-            String url = header.getSchema() + "://" + header.getServerName() + ":" + header.getServerPort() + "/payment/" + order.getOutTradeNo();
+            String url = header.getSchema() + "://" + header.getServerName() ;
+//            if (header.getServerPort() != 80 && header.getServerPort() != 443){
+//                url+= ":" + header.getServerPort();
+//            }
+            url += "/payment/" + order.getOutTradeNo();
+//            System.out.println(url);
 //            String url =  shortLinkService.getClient(header.getClient().getId(), "/payment/"+order.getOutOrderNo());
             return ResponseData.success(ResponseData.object("url", url));
         } catch (Exception e) {

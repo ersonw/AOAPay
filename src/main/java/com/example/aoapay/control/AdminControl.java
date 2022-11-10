@@ -53,6 +53,10 @@ public class AdminControl {
     public ResponseData basicOrderConfirm(@ModelAttribute pData data, HttpServletRequest request){
         return service.basicOrderConfirm(data.getId(),request);
     }
+    @PostMapping("/basicOrder/clean")
+    public ResponseData basicOrderClean(HttpServletRequest request){
+        return service.basicOrderClean(request);
+    }
     @GetMapping("/channel/list")
     public ResponseData channelList(
             @RequestParam(value="title", required = false) String title,

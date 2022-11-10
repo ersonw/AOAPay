@@ -11,6 +11,7 @@ import com.example.aoapay.table.Config;
 import com.example.aoapay.table.ShortLink;
 import com.example.aoapay.table.ShortLinkRecord;
 import com.example.aoapay.util.ToolsUtil;
+import com.example.aoapay.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ public class ShortLinkService {
                     return;
                 }
                 Client client = new Client(JSONObject.toJSONString(header));
-                if (StringUtils.isNotEmpty(link.getUserId())) client.setUserId(link.getUserId());
+                client.setUserId(link.getUserId());
                 clientDao.save(client);
                 link.setClientId(client.getId());
                 shortLinkDao.save(link);
@@ -59,15 +60,20 @@ public class ShortLinkService {
                 if (client == null){
                     client = new Client(JSONObject.toJSONString(header));
                     client.setId(link.getClientId());
+                    client.setUserId(link.getUserId());
                 }
                 client.setUpdateHeader(JSONObject.toJSONString(header));
                 clientDao.save(client);
             }
             shortLinkRecordDao.save(new ShortLinkRecord(link.getId(), JSONObject.toJSONString(header)));
-            Cookie cookie = new Cookie("clientId", link.getClientId());
-            cookie.setPath("/");
-//            cookie.setDomain("");
-            response.addCookie(cookie);
+//            Cookie cookie = new Cookie("clientId", "");
+//            cookie.setPath("/");
+////            cookie.setDomain("");
+//            response.addCookie(cookie);
+//            cookie = new Cookie("clientId", link.getClientId());
+//            cookie.setPath("/");
+//            response.addCookie(cookie);
+            Utils.clearClient(request.getCookies(),link.getClientId(),response);
             response.sendRedirect(link.getUrl());
         }catch(Exception e){
             log.info(e.getMessage());
@@ -105,15 +111,34 @@ public class ShortLinkService {
         return null;
     }
 
+    public Object greaterLink(String clientId,String userId) {
+        ShortLink link = shortLinkDao.findByClient(clientId);
+        if (link == null){
+            link = new ShortLink(userId,clientId);
+            while(shortLinkDao.countAllByShortLink(link.getShortLink()) > 0){
+                link.setShortLink(ToolsUtil.getRandom(7));
+            }
+            link.setUrl("/order");
+            shortLinkDao.save(link);
+        }
+        return greaterUrl(link);
+    }
+
     public Object greaterLink(String clientId) {
+        ShortLink link = shortLinkDao.findByClient(clientId);
+        if (link == null){
+            link = new ShortLink(null,clientId);
+            while(shortLinkDao.countAllByShortLink(link.getShortLink()) > 0){
+                link.setShortLink(ToolsUtil.getRandom(7));
+            }
+            link.setUrl("/order");
+            shortLinkDao.save(link);
+        }
+        return greaterUrl(link);
+    }
+    public String greaterUrl(ShortLink link){
         List<Config> configs = configDao.findAll();
         if (configs.size() > 0){
-            ShortLink link = shortLinkDao.findByClient(clientId);
-            if (link == null){
-                link = new ShortLink(null,clientId);
-                link.setUrl("/order");
-                shortLinkDao.save(link);
-            }
             String hostname = configs.get(0).getHostname();
             if (StringUtils.isEmpty(hostname)) {
                 hostname = "/";
