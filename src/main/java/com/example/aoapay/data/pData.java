@@ -28,6 +28,15 @@ public  class pData  {
     private String deviceId;
     @ApiModelProperty(name = "platform", value= "设备名称",required = false)
     private String platform;
+    @ApiModelProperty(name = "rolesId", value= "角色ID",required = false)
+    private String rolesId;
+    @ApiModelProperty(name = "remark", value= "备注",required = false)
+    private String remark;
+    @ApiModelProperty(name = "admin", value= "管理员",required = false)
+    private boolean admin;
+    @ApiModelProperty(name = "superAdmin", value= "超级管理员",required = false)
+    private boolean superAdmin;
+
 
     @ApiModelProperty(name = "phone", value= "手机号",required = false)
     private String phone;

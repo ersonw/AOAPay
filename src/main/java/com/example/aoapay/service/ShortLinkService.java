@@ -64,7 +64,6 @@ public class ShortLinkService {
                 clientDao.save(client);
             }
             shortLinkRecordDao.save(new ShortLinkRecord(link.getId(), JSONObject.toJSONString(header)));
-//            response.addCookie(new Cookie("clientId", ""));
             Cookie cookie = new Cookie("clientId", link.getClientId());
             cookie.setPath("/");
 //            cookie.setDomain("");

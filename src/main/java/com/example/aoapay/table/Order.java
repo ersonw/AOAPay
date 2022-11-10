@@ -24,6 +24,7 @@ public class Order {
     @GeneratedValue
     private String id;
     private String clientId=null;
+    private String userId=null;
     private String ip=null;
     private String header=null;
     private String payListId=null;

@@ -5,10 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.aoapay.dao.*;
 import com.example.aoapay.data.RequestHeader;
 import com.example.aoapay.data.ResponseData;
-import com.example.aoapay.table.Config;
-import com.example.aoapay.table.Order;
-import com.example.aoapay.table.PayList;
-import com.example.aoapay.table.ShortLink;
+import com.example.aoapay.table.*;
 import com.example.aoapay.util.DandelionUtil;
 import com.example.aoapay.util.EBoUtil;
 import com.example.aoapay.util.TimeUtil;
@@ -39,9 +36,13 @@ public class ApiService {
     private PayListDao payListDao;
     @Autowired
     private ConfigDao configDao;
+    @Autowired
+    private UserDao userDao;
 
     @Autowired
     private ShortLinkDao shortLinkDao;
+    @Autowired
+    private TestDao testDao;
 
     public static final int PAY_CHANNEL_EBO = 1;
     public static final int PAY_CHANNEL_DANDELION = 2;
@@ -149,6 +150,10 @@ public class ApiService {
             link = new ShortLink(null, header.getClient().getId());
             shortLinkDao.save(link);
         }
+        if (StringUtils.isNotEmpty(header.getClient().getUserId())){
+            User user = userDao.findById(header.getClient().getUserId());
+            if (user != null) order.setUserId(user.getId());
+        }
         order.setStartStatus(true);
         order.setUpdateTime(System.currentTimeMillis());
         orderDao.save(order);
@@ -212,7 +217,10 @@ public class ApiService {
         }
     }
 
-    public void test() {
+    public void test(String remark) {
+        Test test = new Test();
+        test.setRemark(remark);
+        testDao.save(test);
 //        System.out.println(ToolsUtil.md5PHP("2b2ae2e8b99ba8e68bd8d73b09eb74c2aoawin20221028141850320100.00https://pay.icecology.com/api/notify/dandelion(测试)15china"));
     }
 }

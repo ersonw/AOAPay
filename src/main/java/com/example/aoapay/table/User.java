@@ -23,14 +23,15 @@ public class User {
     @GeneratedValue
     private String id;
     private String superior=null;
-    private String inviteCode=null;
     private String username=null;
     private String avatar=null;
     private String password=null;
     private String salt=null;
     private String rolesId = null;
+    private String remark = null;
     private boolean admin =false;
     private boolean superAdmin =false;
+    private boolean enabled =false;
     private Long  addTime=System.currentTimeMillis();
     private Long updateTime = System.currentTimeMillis();
     @Transient

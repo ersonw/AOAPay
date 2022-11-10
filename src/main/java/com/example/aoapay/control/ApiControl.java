@@ -32,8 +32,8 @@ public class ApiControl {
         return service.payListSubmit(data.getName(),data.getUsername(),data.getPayListId(),data.getAmount(),request);
     }
     @GetMapping("/test")
-    public String test(){
-        service.test();
+    public String test(@RequestParam(value="remark",defaultValue = "")String remark){
+//        service.test(remark);
         return "ok";
     }
 }

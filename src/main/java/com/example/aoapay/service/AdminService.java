@@ -5,9 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.aoapay.dao.*;
 import com.example.aoapay.data.RequestHeader;
 import com.example.aoapay.data.ResponseData;
-import com.example.aoapay.table.Order;
-import com.example.aoapay.table.PayList;
-import com.example.aoapay.table.User;
+import com.example.aoapay.table.*;
 import com.example.aoapay.util.MD5Util;
 import com.example.aoapay.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -52,17 +50,21 @@ public class AdminService {
     private ShortLinkService shortLinkService;
     @Autowired
     private ApiService apiService;
+    @Autowired
+    private AuthDao authDao;
 
 
-    public String menu(HttpServletRequest request) {
-        JSONArray array = new JSONArray();
+    public ResponseData menu(HttpServletRequest request) {
+
         try{
+            JSONArray array = new JSONArray();
             User user = userService.auth(request);
             array = userService.getRouters(user);
+            return ResponseData.success(array);
         } catch (Exception e) {
             log.error("Error menu {}", e.getMessage());
+            return ResponseData.error(201,"错误："+e.getMessage());
         }
-        return array.toJSONString();
     }
 
     public ResponseData login(String username, String password, HttpServletRequest request) {
@@ -107,13 +109,21 @@ public class AdminService {
         try{
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
-            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+//            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             Page<Order> orderPage;
             Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
             if (StringUtils.isNotEmpty(title)) {
-                orderPage = orderDao.findAllByTitle(title,pageable);
+                if (user.isAdmin() || user.isSuperAdmin()){
+                    orderPage = orderDao.findAllByTitle(title,pageable);
+                }else{
+                    orderPage = orderDao.findUserByTitle(title,user.getId(),pageable);
+                }
             }else {
-                orderPage = orderDao.findAll(pageable);
+                if (user.isAdmin() || user.isSuperAdmin()){
+                    orderPage = orderDao.findAll(pageable);
+                }else{
+                    orderPage = orderDao.findUser(user.getId(),pageable);
+                }
             }
             JSONArray array = new JSONArray();
             for (Order order: orderPage.getContent()) {
@@ -125,7 +135,7 @@ public class AdminService {
             return ResponseData.success(object);
         }catch (Exception e){
 //            e.printStackTrace();
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
 
@@ -134,7 +144,7 @@ public class AdminService {
         try {
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
-            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             Order order = orderDao.findById(id);
             if (order == null) throw new Exception("订单不存在!");
             if (order.isStatus()) throw new Exception("订单已处理过!");
@@ -145,7 +155,7 @@ public class AdminService {
             orderDao.save(order);
             return ResponseData.success("处理成功!",getOrder(order));
         }catch (Exception e){
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
 
@@ -157,7 +167,7 @@ public class AdminService {
         try{
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
-            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             Page<Order> orderPage;
             Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
             if (StringUtils.isNotEmpty(title)) {
@@ -179,7 +189,7 @@ public class AdminService {
             return ResponseData.success(object);
         }catch (Exception e){
 //            e.printStackTrace();
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
     public ResponseData processedOrderList(String title, int page, int limit, HttpServletRequest request) {
@@ -190,7 +200,7 @@ public class AdminService {
         try{
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
-            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             Page<Order> orderPage;
             Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
             if (StringUtils.isNotEmpty(title)) {
@@ -209,7 +219,7 @@ public class AdminService {
             return ResponseData.success(object);
         }catch (Exception e){
 //            e.printStackTrace();
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
 
@@ -218,7 +228,7 @@ public class AdminService {
         try {
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
-            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             PayList list = payListDao.findById(id);
             if (list == null) throw new Exception("渠道不存在!");
             list.setTitle(title);
@@ -243,7 +253,7 @@ public class AdminService {
             payListDao.save(list);
             return ResponseData.success("修改成功!",getChannel(list,user.isSuperAdmin()));
         }catch (Exception e){
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
     public JSONObject getChannel(PayList list, boolean fully){
@@ -277,15 +287,15 @@ public class AdminService {
         try {
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
-            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             PayList list = payListDao.findById(id);
             if (list == null) throw new Exception("渠道不存在!");
             list.setEnabled(!list.isEnabled());
             list.setUpdateTime(System.currentTimeMillis());
             payListDao.save(list);
-            return ResponseData.success("切换状态成功!",getChannel(list,user.isSuperAdmin()));
+            return ResponseData.success(list.isEnabled()?"解除禁用":"禁用"+"成功!",getChannel(list,user.isSuperAdmin()));
         }catch (Exception e){
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
 
@@ -296,7 +306,7 @@ public class AdminService {
         try {
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
-            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             Page<PayList> listPage;
             Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"sort"));
             if (StringUtils.isNotEmpty(title)){
@@ -313,7 +323,7 @@ public class AdminService {
             object.put("list", array);
             return ResponseData.success(object);
         }catch (Exception e){
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
 
@@ -322,7 +332,7 @@ public class AdminService {
         try {
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
             User user = header.getUser();
-            if (!user.isAdmin() || !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             List<PayList> list = payListDao.findAllByIds(ids);
             if (list.isEmpty()) throw new Exception("渠道不存在!");
             JSONArray array = new JSONArray();
@@ -333,7 +343,7 @@ public class AdminService {
             payListDao.saveAll(list);
             return ResponseData.success("全部切换状态成功!",array);
         }catch (Exception e){
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
 
@@ -391,7 +401,312 @@ public class AdminService {
             payListDao.deleteAll(list);
             return ResponseData.success("全部删除成功!");
         }catch (Exception e){
-            return ResponseData.error(e.getMessage());
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData userList(String title, int page, int limit, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        page--;
+        if (page < 0) page = 0;
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            Page<User> listPage;
+            Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
+            if (user.isSuperAdmin()){
+                if (StringUtils.isNotEmpty(title)){
+                    listPage = userDao.findAllByTitle(title,pageable);
+                }else {
+                    listPage = userDao.findAll(pageable);
+                }
+            }else{
+                if (StringUtils.isNotEmpty(title)){
+                    listPage = userDao.findAdminByTitle(title,pageable);
+                }else {
+                    listPage = userDao.findAdmin(pageable);
+                }
+            }
+            JSONArray array = new JSONArray();
+            for (User u : listPage.getContent()){
+                array.add(getUser(u));
+            }
+            JSONObject object = new JSONObject();
+            object.put("total", listPage.getTotalElements());
+            object.put("list", array);
+            return ResponseData.success(object);
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+    public JSONObject getUser(User user){
+        JSONObject object = new JSONObject();
+        object.put("id", user.getId());
+        object.put("username", user.getUsername());
+        object.put("superiorName", "系统管理员");
+        if (StringUtils.isNotEmpty(user.getSuperior())){
+            User superior = userDao.findById(user.getSuperior());
+            if (superior != null){
+                object.put("superiorName", superior.getUsername());
+            }
+        }
+//        if (StringUtils.isNotEmpty(user.getRolesId())){
+//            RolesList roles = rolesListDao.findById(user.getRolesId());
+//            if (roles != null){
+//                object.put("rolesName", roles.getName());
+//            }
+//        }
+        object.put("remark", user.getRemark());
+        object.put("rolesId", user.getRolesId());
+        object.put("enabled", user.isEnabled());
+        object.put("admin", user.isAdmin());
+        object.put("superAdmin", user.isSuperAdmin());
+        object.put("addTime", user.getAddTime());
+        object.put("updateTime", user.getUpdateTime());
+        return object;
+    }
+
+    public ResponseData userEnable(String id, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            User u = userDao.findById(id);
+            if (u == null) throw new Exception("用户不存在!");
+            u.setEnabled(!u.isEnabled());
+            u.setUpdateTime(System.currentTimeMillis());
+            userDao.save(u);
+            if (!u.isEnabled()){
+                authDao.removeUser(authDao.findUserByUserId(u.getId()));
+            }
+            return ResponseData.success(u.isEnabled()?"解除禁用":"禁用"+"成功!",getUser(u));
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData userChange(String id, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            User u = userDao.findById(id);
+            if (u == null) throw new Exception("用户不存在!");
+            if (u.getId().equals(user.getId())) throw new Exception("不可通过列表重置自身密码!");
+            u.setSalt(ToolsUtil.getSalt());
+            String password = ToolsUtil.getRandom(8);
+            MD5Util md5 = new MD5Util(u.getSalt());
+            u.setPassword(md5.getPassWord(md5.getMD5(password)));
+            u.setUpdateTime(System.currentTimeMillis());
+            userDao.save(u);
+            authDao.removeUser(authDao.findUserByUserId(u.getId()));
+            return ResponseData.success("密码重置成功!",ResponseData.object("password",password));
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData userAdd(String username, boolean admin, boolean superAdmin, boolean enabled, String rolesId,String remark, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
+            username = username.replaceAll(" ","").trim();
+            if (StringUtils.isEmpty(username)
+//                    || (!admin && !superAdmin && StringUtils.isEmpty(rolesId))
+            ) throw new Exception("参数不完整！");
+            User profile = userDao.findByUsername(username);
+            if (profile != null) throw new Exception("用户名已存在!");
+            profile = new User();
+            profile.setUsername(username);
+            if(user.isSuperAdmin()){
+                profile.setAdmin(admin);
+                profile.setSuperAdmin(admin);
+            }
+            profile.setEnabled(enabled);
+            profile.setSuperior(user.getId());
+            profile.setRemark(remark);
+//            RolesList roles = rolesListDao.findById(rolesId);
+//            if (roles != null){
+//                profile.setRolesId(rolesId);
+//            }
+            profile.setSalt(ToolsUtil.getSalt());
+            String password = ToolsUtil.getRandom(8);
+            MD5Util md5 = new MD5Util(profile.getSalt());
+            profile.setPassword(md5.getPassWord(md5.getMD5(password)));
+            userDao.save(profile);
+            JSONObject object = getUser(profile);
+            object.put("password",password);
+            return ResponseData.success("用户添加成功!",object);
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData routerList(String title, int page, int limit, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        page--;
+        if (page < 0) page = 0;
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isSuperAdmin()) throw new Exception("没有管理权限!");
+            Page<User> listPage;
+            Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
+            if (user.isSuperAdmin()){
+                if (StringUtils.isNotEmpty(title)){
+                    listPage = userDao.findAllByTitle(title,pageable);
+                }else {
+                    listPage = userDao.findAll(pageable);
+                }
+            }else{
+                if (StringUtils.isNotEmpty(title)){
+                    listPage = userDao.findAdminByTitle(title,pageable);
+                }else {
+                    listPage = userDao.findAdmin(pageable);
+                }
+            }
+            JSONArray array = new JSONArray();
+            for (User u : listPage.getContent()){
+                array.add(getUser(u));
+            }
+            JSONObject object = new JSONObject();
+            object.put("total", listPage.getTotalElements());
+            object.put("list", array);
+            return ResponseData.success(object);
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData userRemoveAll(List<String> ids, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            if (!user.isSuperAdmin()) throw new Exception("没有权限");
+            List<User> list = userDao.findAllByIds(ids);
+            if (list.isEmpty()) throw new Exception("用户不存在!");
+            userDao.deleteAll(list);
+            return ResponseData.success("全部删除成功!");
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData clientList(String title, int page, int limit, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        page--;
+        if (page < 0) page = 0;
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            Page<Client> clientPage;
+            Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
+            if (user.isSuperAdmin() || user.isAdmin()){
+                if (StringUtils.isNotEmpty(title)){
+                    clientPage = clientDao.findAllByToken(title,pageable);
+                }else {
+                    clientPage = clientDao.findAll(pageable);
+                }
+            }else{
+                if (StringUtils.isNotEmpty(title)){
+                    clientPage = clientDao.findUserByUserId(user.getId(),title,pageable);
+                }else {
+                    clientPage = clientDao.findAllByUserId(user.getId(),pageable);
+                }
+            }
+            JSONArray array = new JSONArray();
+            for (Client client : clientPage.getContent()){
+                array.add(getClient(client,user.isSuperAdmin() || user.isAdmin()));
+            }
+            JSONObject object = new JSONObject();
+            object.put("total", clientPage.getTotalElements());
+            object.put("list", array);
+            return ResponseData.success(object);
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+    public JSONObject getClient(Client client, boolean admin){
+        JSONObject object = new JSONObject();
+        object.put("id", client.getId());
+        if (StringUtils.isNotEmpty(client.getRegisterHeader())){
+            RequestHeader header = JSONObject.toJavaObject(JSONObject.parseObject(client.getRegisterHeader()), RequestHeader.class);
+            object.put("ip", header.getIp());
+            if (admin){
+                object.put("serverName", header.getServerName());
+                object.put("url", header.getUrl());
+            }
+        }
+        if (StringUtils.isNotEmpty(client.getUpdateHeader())){
+            RequestHeader header = JSONObject.toJavaObject(JSONObject.parseObject(client.getUpdateHeader()), RequestHeader.class);
+            object.put("ipUpdate", header.getIp());
+            if (admin){
+                object.put("serverNameUpdate", header.getServerName());
+                object.put("urlUpdate", header.getUrl());
+            }
+        }
+        object.put("addTime", client.getAddTime());
+        object.put("updateTime", client.getUpdateTime());
+        return object;
+    }
+
+    public ResponseData clientRemove(String id, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+//            if (!user.isSuperAdmin()) throw new Exception("没有权限");
+            Client client = clientDao.findById(id);
+            if (client == null) throw new Exception("数据不存在!");
+            if (user.isSuperAdmin()){
+                clientDao.delete(client);
+            }else{
+                client.setUserId(null);
+                clientDao.save(client);
+            }
+            return ResponseData.success("删除成功!");
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData clientRemoveAll(List<String> ids, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+//            if (!user.isSuperAdmin()) throw new Exception("没有权限");
+            List<Client> list = clientDao.findAllByIds(ids);
+            if (list.isEmpty()) throw new Exception("数据不存在!");
+            if (user.isSuperAdmin()){
+                clientDao.deleteAll(list);
+            }else{
+                for (Client client : list) {
+                    client.setUserId(null);
+                }
+                clientDao.saveAll(list);
+            }
+            return ResponseData.success("全部删除成功!");
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData clientAdd(HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+
+            return ResponseData.success("生成邀请链接成功!");
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
         }
     }
 }

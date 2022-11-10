@@ -60,6 +60,28 @@ public class OrderDao extends MongoAnimal<Order> {
         long total = super.count(mach,super.getGroup());
         return super.newPage(pageable, list, total);
     }
+    public Page<Order> findUserByTitle(String title,String uid, Pageable pageable){
+        AggregationOperation mach = super.getMatch(
+                super.and(
+                        super.or(
+                                super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
+                                super.where("outTradeNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
+                        ),
+                        super.where("userId").is(uid)
+                )
+        );
+        List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
+        long total = super.count(mach,super.getGroup());
+        return super.newPage(pageable, list, total);
+    }
+    public Page<Order> findUser(String uid, Pageable pageable){
+        AggregationOperation mach = super.getMatch(
+                super.where("userId").is(uid)
+        );
+        List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
+        long total = super.count(mach,super.getGroup());
+        return super.newPage(pageable, list, total);
+    }
 
     public void deleteAllByTradeStatus(boolean status) {
         super.remove(super.and(super.where("tradeStatus", status),super.where("status",false)));

@@ -7,6 +7,7 @@ import com.example.aoapay.dao.UserDao;
 import com.example.aoapay.data.RequestHeader;
 import com.example.aoapay.table.Client;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +50,19 @@ public class Utils {
         client.setUpdateTime(System.currentTimeMillis());
         client.setUpdateHeader(JSONObject.toJSONString(headers));
         self.clientDao.save(client);
+    }
+    public static void clearClient(Cookie[] cookies,String token, HttpServletResponse response){
+       if (StringUtils.isNotEmpty(token)){
+           for (Cookie cookie : cookies){
+               if (cookie.getName().equals("clientId")){
+                   cookie.setValue("");
+                   response.addCookie(cookie);
+               }
+           }
+           Cookie cookie = new Cookie("clientId", token);
+           cookie.setPath("/");
+           response.addCookie(cookie);
+       }
     }
     public static Client addClient(HttpServletRequest request, HttpServletResponse response){
         RequestHeader headers = ToolsUtil.getRequestHeaders(request);

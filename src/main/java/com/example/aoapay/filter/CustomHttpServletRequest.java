@@ -143,7 +143,7 @@ public class CustomHttpServletRequest extends HttpServletRequestWrapper {
             for (int i = 0; i < objects.length; i++) {
                 if (objects[i] instanceof String){
                     values[i] = (String) objects[i];
-                }else{
+                }else if (objects[i] != null && StringUtils.isNotEmpty(objects[i].toString())){
                     values[i] = objects[i].toString();
                 }
             }

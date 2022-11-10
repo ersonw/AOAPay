@@ -86,12 +86,11 @@ public class RedisAnimal<T> {
         if (value == null)return;
         Set<String> values = redisTemplate.opsForSet().members(this.collectionName);
         assert values != null;
+        String e = JSONObject.toJSONString(value);
+        e = AESUtils.Encrypt(e);
         for (String v: values) {
             if (StringUtils.isNotEmpty(v)){
-                String s = v;
-                String d = AESUtils.Decrypt(v);
-                if (StringUtils.isNotEmpty(d)) s = d;
-                if (JSONObject.toJSONString(value).equals(s)) redisTemplate.opsForSet().remove(this.collectionName,v);
+                if (Objects.equals(e, v)) redisTemplate.opsForSet().remove(this.collectionName,v);
             }
         }
     }

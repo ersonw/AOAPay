@@ -56,6 +56,7 @@ public class UserService {
     public User authUser(String username, String password, RequestHeader header) throws Exception {
         User user = userDao.findByUsername(username);
         if (user == null) throw new Exception("用户不存在！");
+        if (!user.isEnabled()) throw new Exception("用户状态异常，请联系管理员！");
         long count = getUserLoginFail(user.getId());
         MD5Util md5 = new MD5Util(user.getSalt());
         if (!md5.getPassWord(password).equals(user.getPassword())) {
@@ -68,12 +69,19 @@ public class UserService {
         return user;
     }
     public JSONArray getRouters(User user){
-        List<RouterList> list = new ArrayList<>();
         if (user.isSuperAdmin()){
-            list = routerListDao.findAllBySub();
-        }else if (user.isAdmin()){
-        }else{
+            return RoleUtil.getSuperAdminRouterList();
         }
-        return RoleUtil.getRouters(list);
+        if (user.isAdmin()){
+            return RoleUtil.getAdminRouterList();
+        }
+        return RoleUtil.getUserRouterList();
+//        List<RouterList> list = new ArrayList<>();
+//        if (user.isSuperAdmin()){
+//            list = routerListDao.findAllBySub();
+//        }else if (user.isAdmin()){
+//        }else{
+//        }
+//        return RoleUtil.getRouters(list);
     }
 }
