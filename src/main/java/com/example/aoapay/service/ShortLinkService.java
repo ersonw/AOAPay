@@ -39,19 +39,22 @@ public class ShortLinkService {
 //        System.out.println(link);
         try{
             if (link==null) {
-                response.sendError(404);
+//                response.sendError(404);
+                response.sendRedirect("https://www.baidu.com");
                 return;
             }
             if (StringUtils.isEmpty(link.getUrl())){
                 link.setUrl("/");
             }
             if (StringUtils.isEmpty(link.getClientId())){
-                if (StringUtils.isEmpty(link.getUserId())){
-                    response.sendError(403);
-                    return;
-                }
+//                if (StringUtils.isEmpty(link.getUserId())){
+//                    response.sendRedirect("https://www.baidu.com");
+//                    return;
+//                }
                 Client client = new Client(JSONObject.toJSONString(header));
-                client.setUserId(link.getUserId());
+                if (StringUtils.isNotEmpty(link.getUserId())){
+                    client.setUserId(link.getUserId());
+                }
                 clientDao.save(client);
                 link.setClientId(client.getId());
                 shortLinkDao.save(link);
@@ -66,13 +69,6 @@ public class ShortLinkService {
                 clientDao.save(client);
             }
             shortLinkRecordDao.save(new ShortLinkRecord(link.getId(), JSONObject.toJSONString(header)));
-//            Cookie cookie = new Cookie("clientId", "");
-//            cookie.setPath("/");
-////            cookie.setDomain("");
-//            response.addCookie(cookie);
-//            cookie = new Cookie("clientId", link.getClientId());
-//            cookie.setPath("/");
-//            response.addCookie(cookie);
             Utils.clearClient(request.getCookies(),link.getClientId(),response);
             response.sendRedirect(link.getUrl());
         }catch(Exception e){

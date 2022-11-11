@@ -14,10 +14,8 @@ import javax.persistence.GeneratedValue;
 @Document(collection = "shortLinkRecord")
 public class ShortLinkRecord {
     public ShortLinkRecord(){
-        this.addTime=System.currentTimeMillis();
     }
     public ShortLinkRecord(String shortLinkId, String header){
-        this.addTime=System.currentTimeMillis();
         this.shortLinkId=shortLinkId;
         this.header=header;
     }
@@ -26,5 +24,5 @@ public class ShortLinkRecord {
     private String id;
     private String shortLinkId=null;
     private String header=null;
-    private long addTime=0;
+    private long addTime=System.currentTimeMillis();
 }

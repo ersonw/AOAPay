@@ -3,6 +3,7 @@ package com.example.aoapay.util;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.example.aoapay.table.RouterList;
+import com.example.aoapay.table.User;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ public class RoleUtil {
         JSONArray array = new JSONArray();
 //        array.add(getDashboard());
         array.add(getClient());
+        array.add(getShortLink(0));
         array.add(getOrder(0));
         array.add(getChannel());
         array.add(getUser());
@@ -24,6 +26,7 @@ public class RoleUtil {
         JSONArray array = new JSONArray();
 //        array.add(getDashboard());
         array.add(getClient());
+        array.add(getShortLink(1));
         array.add(getOrder(0));
         array.add(getChannel());
         array.add(getUser());
@@ -33,8 +36,37 @@ public class RoleUtil {
         JSONArray array = new JSONArray();
 //        array.add(getDashboard());
         array.add(getClient());
+        array.add(getShortLink(1));
         array.add(getOrder(3));
         return array;
+    }
+    public static JSONObject getShortLink(int level){
+        JSONObject object = new JSONObject();
+        if (level==0){
+            object.put("title","短链接管理");
+            object.put("key","/app/short");
+            JSONArray subs = new JSONArray();
+            JSONObject json = new JSONObject();
+            json.put("key","/app/short/list");
+            json.put("title","所有链接");
+            json.put("component","ShortLink");
+            subs.add(json);
+            json = new JSONObject();
+            json.put("key","/app/short/record");
+            json.put("title","访问记录");
+            json.put("component","ShortLink");
+            subs.add(json);
+            object.put("subs",subs);
+        }else if (level==1){
+            object.put("key","/app/short/list");
+            object.put("title","短链接管理");
+            object.put("component","ShortLink");
+        }else if (level==2){
+            object.put("key","/app/short/record");
+            object.put("title","访问记录");
+            object.put("component","ShortLink");
+        }
+        return object;
     }
     public static JSONObject getDashboard(){
         JSONObject object = new JSONObject();
@@ -145,6 +177,29 @@ public class RoleUtil {
         object.put("icon", router.getIcon());
         object.put("component", router.getComponent());
         return object;
+    }
+
+    public static JSONArray getPermissions(User user) {
+        JSONArray array = new JSONArray();
+        if (user.isSuperAdmin()){
+            array = getSuperAdminRouterList();
+        }else if (user.isAdmin()){
+            array = getAdminRouterList();
+        }else{
+            array = getUserRouterList();
+        }
+        JSONArray roles = new JSONArray();
+        for (Object object: array) {
+            JSONObject json = JSONObject.parseObject(JSONObject.toJSONString(object));
+            roles.add(json.getString("key"));
+            if (json.get("subs") instanceof JSONArray){
+                JSONArray a = json.getJSONArray("subs");
+                for (int i = 0; i < a.size(); i++) {
+                    roles.add(json.getString("key"));
+                }
+            }
+        }
+        return roles;
     }
 //    实现 增删查改 权限判断 并且下发前端
 }

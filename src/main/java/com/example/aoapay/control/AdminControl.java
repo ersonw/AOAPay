@@ -184,4 +184,27 @@ public class AdminControl {
     ){
         return service.clientAdd(request);
     }
+    @GetMapping("/shortLink/list")
+    public ResponseData shortLinkList(
+            @RequestParam(value="title", required = false) String title,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "limit",defaultValue = "10") int limit,
+            HttpServletRequest request
+    ){
+        return service.shortLinkList(title,page,limit,request);
+    }
+    @GetMapping("/shortLink/remove")
+    public ResponseData shortLinkRemove(
+            @RequestParam(value="id",required = true) String id,
+            HttpServletRequest request
+    ){
+        return service.shortLinkRemove(id,request);
+    }
+    @PostMapping("/shortLink/remove")
+    public ResponseData shortLinkRemoveAll(
+            @ModelAttribute pData data,
+            HttpServletRequest request
+    ){
+        return service.shortLinkRemoveAll(data.getIds(),request);
+    }
 }

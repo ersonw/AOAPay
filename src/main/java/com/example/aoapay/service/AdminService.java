@@ -7,6 +7,7 @@ import com.example.aoapay.data.RequestHeader;
 import com.example.aoapay.data.ResponseData;
 import com.example.aoapay.table.*;
 import com.example.aoapay.util.MD5Util;
+import com.example.aoapay.util.RoleUtil;
 import com.example.aoapay.util.TimeUtil;
 import com.example.aoapay.util.ToolsUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -79,6 +80,7 @@ public class AdminService {
             object.put("admin", user.isAdmin());
             object.put("avatar", user.getAvatar());
             object.put("token",user.getToken());
+            object.put("permissions", RoleUtil.getPermissions(user));
             return ResponseData.success(object);
         }catch (Exception e){
             return ResponseData.error(201,"错误："+e.getMessage());
@@ -731,6 +733,126 @@ public class AdminService {
             if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             orderDao.deleteAllByTradeStatus(false, TimeUtil.getTodayZero());
             return ResponseData.success("全部清理成功!");
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData shortLinkList(String title, int page, int limit, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        page--;
+        if (page < 0) page = 0;
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            Page<ShortLink> linkPage;
+            Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
+            if (user.isSuperAdmin() || user.isAdmin()){
+                if (StringUtils.isNotEmpty(title)){
+                    linkPage = shortLinkDao.findAllByTitle(title,pageable);
+                }else {
+                    linkPage = shortLinkDao.findAll(pageable);
+                }
+            }else{
+                if (StringUtils.isNotEmpty(title)){
+                    linkPage = shortLinkDao.findTitleByUserId(user.getId(),title,pageable);
+                }else {
+                    linkPage = shortLinkDao.findAllByUserId(user.getId(),pageable);
+                }
+            }
+            JSONArray array = new JSONArray();
+            for (ShortLink link : linkPage.getContent()){
+                array.add(getShortLink(link,user.isSuperAdmin() || user.isAdmin()));
+            }
+            JSONObject object = new JSONObject();
+            object.put("total", linkPage.getTotalElements());
+            object.put("list", array);
+            return ResponseData.success(object);
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+    public JSONObject getShortLink(ShortLink shortLink, boolean admin){
+        JSONObject object = new JSONObject();
+        object.put("id", shortLink.getId());
+        object.put("clientId", shortLink.getClientId());
+        object.put("shortLink", shortLink.getShortLink());
+        object.put("url", shortLink.getUrl());
+        object.put("jump", shortLinkService.greaterUrl(shortLink));
+        if (StringUtils.isNotEmpty(shortLink.getUserId()) && admin){
+            User user = userDao.findById(shortLink.getUserId());
+            if (user != null){
+                object.put("username", user.getUsername());
+            }
+        }
+        object.put("count", shortLinkRecordDao.countAllById(shortLink.getId()));
+        ShortLinkRecord record = shortLinkRecordDao.findByFirst(shortLink.getId());
+        if (record != null){
+            RequestHeader header = JSONObject.toJavaObject(JSONObject.parseObject(record.getHeader()), RequestHeader.class);
+            object.put("ip", header.getIp());
+            if (admin){
+                object.put("serverName", header.getServerName());
+            }
+        }
+        record = shortLinkRecordDao.findByLast(shortLink.getId());
+        if (record != null){
+            RequestHeader header = JSONObject.toJavaObject(JSONObject.parseObject(record.getHeader()), RequestHeader.class);
+            object.put("ipUpdate", header.getIp());
+            if (admin){
+                object.put("serverNameUpdate", header.getServerName());
+            }
+        }
+        object.put("addTime", shortLink.getAddTime());
+        return object;
+    }
+
+    public ResponseData shortLinkRemove(String id, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            ShortLink shortLink = shortLinkDao.findById(id);
+            if (shortLink == null) throw new Exception("记录不存在!");
+            if (user.isSuperAdmin()){
+                if (shortLinkRecordDao.countAllById(shortLink.getId()) == 0){
+                    shortLinkDao.delete(shortLink);
+                }else{
+                    throw new Exception("无法删除已激活的链接！");
+                }
+            }else{
+                if (shortLinkRecordDao.countAllById(shortLink.getId()) == 0){
+                    shortLink.setUserId(null);
+                    shortLinkDao.save(shortLink);
+                }else{
+                    throw new Exception("无法删除已激活的链接！");
+                }
+            }
+            return ResponseData.success("删除成功!");
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData shortLinkRemoveAll(List<String> ids, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            List<ShortLink> list = shortLinkDao.findAllById(ids);
+            if (list.size() == 0) throw new Exception("记录不存在!");
+            for (ShortLink link: list) {
+                if (user.isSuperAdmin()){
+                    if (shortLinkRecordDao.countAllById(link.getId()) == 0){
+                        shortLinkDao.delete(link);
+                    }
+                }else{
+                    if (shortLinkRecordDao.countAllById(link.getId()) == 0){
+                        link.setUserId(null);
+                        shortLinkDao.save(link);
+                    }
+                }
+            }
+            return ResponseData.success("全部删除成功!部分已激活链接无法删除，如需强制删除，请联系管理员");
         }catch (Exception e){
             return ResponseData.error("错误提示："+e.getMessage());
         }

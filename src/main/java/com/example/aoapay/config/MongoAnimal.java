@@ -214,6 +214,16 @@ public class MongoAnimal<T> {
         AggregationOperation match = Aggregation.match(criteria);
         return aggregate(match, sort,limit);
     }
+    public List<T> findAllById(List<String> ids){
+        AggregationOperation limit = Aggregation.limit(3000);
+        AggregationOperation sort = Aggregation.sort(Sort.Direction.DESC, "addTime");
+        Criteria[] criteriaList = new Criteria[ids.size()];
+        for (int i = 0; i < criteriaList.length; i++) {
+            criteriaList[i] = Criteria.where("_id").is(ids.get(i));
+        }
+        AggregationOperation match = Aggregation.match(or(criteriaList));
+        return aggregate(match, sort,limit);
+    }
     public T findById(String id){
         AggregationOperation limit = Aggregation.limit(1);
         AggregationOperation sort = Aggregation.sort(Sort.Direction.DESC, "addTime");
@@ -223,6 +233,11 @@ public class MongoAnimal<T> {
         criteria.andOperator(criteriaList);
         AggregationOperation match = Aggregation.match(criteria);
         List<T> list = aggregate(match, sort,limit);
+        if (list.size() == 0) return null;
+        return list.get(0);
+    }
+    public T findBy(AggregationOperation... operations){
+        List<T> list = aggregate(operations);
         if (list.size() == 0) return null;
         return list.get(0);
     }
