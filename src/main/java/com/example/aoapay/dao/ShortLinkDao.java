@@ -70,4 +70,13 @@ public class ShortLinkDao extends MongoAnimal<ShortLink> {
         long total = super.count(mach,super.getGroup());
         return super.newPage(pageable, list, total);
     }
+
+    public void deleteByUserId(String userId) {
+        super.remove(super.where("userId").is(userId));
+    }
+    public void deleteByUserIds(List<String> ids) {
+        for (String id: ids) {
+            deleteByUserId(id);
+        }
+    }
 }

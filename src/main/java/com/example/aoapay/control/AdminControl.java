@@ -132,12 +132,26 @@ public class AdminControl {
     ){
         return service.userChange(id,request);
     }
+    @GetMapping("/user/admin")
+    public ResponseData userAdmin(
+            @RequestParam(value="id", required = false) String id,
+            HttpServletRequest request
+    ){
+        return service.userAdmin(id,request);
+    }
+    @GetMapping("/user/super")
+    public ResponseData userSuper(
+            @RequestParam(value="id", required = false) String id,
+            HttpServletRequest request
+    ){
+        return service.userSuper(id,request);
+    }
     @PostMapping("/user/add")
     public ResponseData userAdd(
             @ModelAttribute pData data,
             HttpServletRequest request
     ){
-        return service.userAdd(data.getUsername(),data.isAdmin(),data.isSuperAdmin(),data.isEnabled(),data.getRolesId(), data.getRemark(), request);
+        return service.userAdd(data.getId(),data.getUsername(),data.isAdmin(),data.isSuperAdmin(),data.isEnabled(),data.getRolesId(), data.getRemark(), request);
     }
     @PostMapping("/user/remove")
     public ResponseData userRemoveAll(

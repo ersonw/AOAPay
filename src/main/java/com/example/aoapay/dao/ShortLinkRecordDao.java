@@ -6,6 +6,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class ShortLinkRecordDao extends MongoAnimal<ShortLinkRecord> {
     public ShortLinkRecordDao(){
@@ -27,5 +29,14 @@ public class ShortLinkRecordDao extends MongoAnimal<ShortLinkRecord> {
         return super.count(super.getMatch(
                 super.where("shortLinkId").is(id)
         ),super.getGroup());
+    }
+
+    public void deleteByUserId(String userId) {
+        super.remove(super.where("userId").is(userId));
+    }
+    public void deleteByUserIds(List<String> ids) {
+        for (String id: ids) {
+            deleteByUserId(id);
+        }
     }
 }

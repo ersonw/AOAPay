@@ -41,10 +41,10 @@ public class UserDao extends MongoAnimal<User> {
         return super.newPage(pageable, list, total);
     }
 
-    public Page<User> findAdmin(Pageable pageable) {
+    public Page<User> findAdmin(String id,Pageable pageable) {
         AggregationOperation mach = super.getMatch(
                 super.and(
-                        super.where("admin").is(false),
+                        super.where("superior").is(id),
                         super.where("superAdmin").is(false)
                 )
         );
@@ -53,11 +53,11 @@ public class UserDao extends MongoAnimal<User> {
         return super.newPage(pageable, list, total);
     }
 
-    public Page<User> findAdminByTitle(String title, Pageable pageable) {
+    public Page<User> findAdminByTitle(String id,String title, Pageable pageable) {
         AggregationOperation mach = super.getMatch(
                 super.and(
                         super.where("username").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
-                        super.where("admin").is(false),
+                        super.where("superior").is(id),
                         super.where("superAdmin").is(false)
                 )
         );
