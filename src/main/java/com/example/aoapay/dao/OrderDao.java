@@ -93,54 +93,94 @@ public class OrderDao extends MongoAnimal<Order> {
         super.remove(super.and(super.where("tradeStatus", false),super.where("status",status)));
     }
 
-    public Page<Order> findAllByTitleCompleted(String title, Pageable pageable) {
+    public Page<Order> findAllByTitleCompleted(Long start,Long end,String title, Pageable pageable) {
+        List<Criteria> criteriaList =new ArrayList<>();
+        criteriaList.add(super.or(
+                super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
+                super.where("username").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
+        ));
+        List<Criteria> paramList = new ArrayList<>();
+        paramList.add(super.where("status",true));
+        if (start != null){
+            paramList.add(super.where("updateTime").gte(start));
+        }
+        if (end != null){
+            paramList.add(super.where("updateTime").lte(end));
+        }
+        Criteria[] params = new Criteria[paramList.size()];
+        paramList.toArray(params);
+        criteriaList.add(super.and(params));
+        Criteria[] criterias = new Criteria[criteriaList.size()];
+        criteriaList.toArray(criterias);
         AggregationOperation mach = super.getMatch(
-                super.and(
-                        super.or(
-                                super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
-                                super.where("username").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
-                        ),
-                        super.where("status",true)
-                )
+                super.and(criterias)
         );
         List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
         long total = super.count(mach,super.getGroup());
         return super.newPage(pageable, list, total);
     }
 
-    public Page<Order> findAllByCompleted(Pageable pageable) {
+    public Page<Order> findAllByCompleted(Long start,Long end,Pageable pageable) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        criteriaList.add(super.where("status",true));
+        if (start != null){
+            criteriaList.add(super.where("updateTime").gte(start));
+        }
+        if (end != null){
+            criteriaList.add(super.where("updateTime").lte(end));
+        }
+        Criteria[] params = new Criteria[criteriaList.size()];
+        criteriaList.toArray(params);
         AggregationOperation mach = super.getMatch(
-                super.where("status",true)
+                super.and(params)
         );
         List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
         long total = super.count(mach,super.getGroup());
         return super.newPage(pageable, list, total);
     }
 
-    public Page<Order> findAllByTitleProcessed(String title, Pageable pageable) {
+    public Page<Order> findAllByTitleProcessed(Long start,Long end,String title, Pageable pageable) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        criteriaList.add(super.or(
+                super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
+                super.where("outTradeNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
+        ));
+        List<Criteria> paramList = new ArrayList<>();
+        paramList.add(super.where("status",false));
+        paramList.add(super.where("tradeStatus",true));
+        if (start != null){
+            paramList.add(super.where("addTime").gte(start));
+        }
+        if (end != null){
+            paramList.add(super.where("addTime").lte(end));
+        }
+        Criteria[] params = new Criteria[paramList.size()];
+        paramList.toArray(params);
+        criteriaList.add(super.and(params));
+        Criteria[] criterias = new Criteria[criteriaList.size()];
+        criteriaList.toArray(criterias);
         AggregationOperation mach = super.getMatch(
-                super.and(
-                        super.or(
-                                super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
-                                super.where("outTradeNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
-                        ),
-                        super.and(
-                                super.where("status",false),
-                                super.where("tradeStatus",true)
-                        )
-                )
+                super.and(criterias)
         );
         List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
         long total = super.count(mach,super.getGroup());
         return super.newPage(pageable, list, total);
     }
 
-    public Page<Order> findAllByProcessed(Pageable pageable) {
+    public Page<Order> findAllByProcessed(Long start,Long end,Pageable pageable) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        criteriaList.add(super.where("status",false));
+        criteriaList.add(super.where("tradeStatus",true));
+        if (start != null){
+            criteriaList.add(super.where("addTime").gte(start));
+        }
+        if (end != null){
+            criteriaList.add(super.where("addTime").lte(end));
+        }
+        Criteria[] criterias = new Criteria[criteriaList.size()];
+        criteriaList.toArray(criterias);
         AggregationOperation mach = super.getMatch(
-                super.and(
-                        super.where("status",false),
-                        super.where("tradeStatus",true)
-                )
+                super.and(criterias)
         );
         List<Order> list = super.aggregate(mach,super.getSkip(pageable.getOffset()),super.getLimit(pageable.getPageSize()),super.getSort(pageable));
         long total = super.count(mach,super.getGroup());

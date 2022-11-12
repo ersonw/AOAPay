@@ -167,7 +167,7 @@ public class AdminService {
         }
     }
 
-    public ResponseData completedOrderList(String title, int page, int limit, HttpServletRequest request) {
+    public ResponseData completedOrderList(String title, int page, int limit,Long start,Long end,HttpServletRequest request) {
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         page--;
         if (page < 0) page = 0;
@@ -177,11 +177,12 @@ public class AdminService {
             User user = header.getUser();
             if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             Page<Order> orderPage;
+            long count = 0;
             Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
             if (StringUtils.isNotEmpty(title)) {
-                orderPage = orderDao.findAllByTitleCompleted(title,pageable);
+                orderPage = orderDao.findAllByTitleCompleted(start,end,title,pageable);
             }else {
-                orderPage = orderDao.findAllByCompleted(pageable);
+                orderPage = orderDao.findAllByCompleted(start,end,pageable);
             }
             JSONArray array = new JSONArray();
             for (Order order: orderPage.getContent()) {
@@ -194,13 +195,14 @@ public class AdminService {
             JSONObject object = new JSONObject();
             object.put("total", orderPage.getTotalElements());
             object.put("list",array);
+            object.put("count",count);
             return ResponseData.success(object);
         }catch (Exception e){
 //            e.printStackTrace();
             return ResponseData.error("错误提示："+e.getMessage());
         }
     }
-    public ResponseData processedOrderList(String title, int page, int limit, HttpServletRequest request) {
+    public ResponseData processedOrderList(String title, int page, int limit,Long start,Long end,HttpServletRequest request) {
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         page--;
         if (page < 0) page = 0;
@@ -210,11 +212,12 @@ public class AdminService {
             User user = header.getUser();
             if (!user.isAdmin() && !user.isSuperAdmin()) throw new Exception("非管理员用户");
             Page<Order> orderPage;
+            long count = 0;
             Pageable pageable = PageRequest.of(page, limit, Sort.by(Sort.Direction.DESC,"addTime"));
             if (StringUtils.isNotEmpty(title)) {
-                orderPage = orderDao.findAllByTitleProcessed(title,pageable);
+                orderPage = orderDao.findAllByTitleProcessed(start,end,title,pageable);
             }else {
-                orderPage = orderDao.findAllByProcessed(pageable);
+                orderPage = orderDao.findAllByProcessed(start,end,pageable);
             }
             JSONArray array = new JSONArray();
             for (Order order: orderPage.getContent()) {
@@ -224,9 +227,10 @@ public class AdminService {
             JSONObject object = new JSONObject();
             object.put("total", orderPage.getTotalElements());
             object.put("list",array);
+            object.put("count",count);
             return ResponseData.success(object);
         }catch (Exception e){
-//            e.printStackTrace();
+            e.printStackTrace();
             return ResponseData.error("错误提示："+e.getMessage());
         }
     }

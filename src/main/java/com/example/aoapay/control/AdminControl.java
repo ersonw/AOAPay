@@ -36,18 +36,22 @@ public class AdminControl {
             @RequestParam(value="title", required = false) String title,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "limit",defaultValue = "10") int limit,
+            @RequestParam(value = "start",required = false) Long start,
+            @RequestParam(value = "end",required = false) Long end,
             HttpServletRequest request
     ){
-        return service.completedOrderList(title,page,limit,request);
+        return service.completedOrderList(title,page,limit,start,end,request);
     }
     @GetMapping("/processedOrder/list")
     public ResponseData processedOrderList(
             @RequestParam(value="title", required = false) String title,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "limit",defaultValue = "10") int limit,
+            @RequestParam(value = "start",required = false) Long start,
+            @RequestParam(value = "end",required = false) Long end,
             HttpServletRequest request
     ){
-        return service.processedOrderList(title,page,limit,request);
+        return service.processedOrderList(title,page,limit,start,end,request);
     }
     @PostMapping("/basicOrder/confirm")
     public ResponseData basicOrderConfirm(@ModelAttribute pData data, HttpServletRequest request){
