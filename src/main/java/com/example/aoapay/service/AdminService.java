@@ -57,6 +57,8 @@ public class AdminService {
     private AuthDao authDao;
     @Autowired
     private LoginRecordDao loginRecordDao;
+    @Autowired
+    private LoginRecordFailDao loginRecordFailDao;
 
 
     public ResponseData menu(HttpServletRequest request) {
@@ -597,6 +599,8 @@ public class AdminService {
             userDao.deleteAll(list);
             shortLinkDao.deleteByUserIds(ids);
             shortLinkRecordDao.deleteByUserIds(ids);
+            loginRecordDao.deleteByUserIds(ids);
+            loginRecordFailDao.deleteByUserIds(ids);
             return ResponseData.success("全部删除成功!");
         }catch (Exception e){
             return ResponseData.error("错误提示："+e.getMessage());

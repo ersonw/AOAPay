@@ -35,4 +35,13 @@ public class LoginRecordDao extends MongoAnimal<LoginRecord> {
                 super.where("userId").is(id)
         ), Aggregation.sort(Sort.Direction.DESC, "addTime"),super.getLimit(1));
     }
+
+    public void deleteByUserId(String userId) {
+        super.remove(super.where("userId").is(userId));
+    }
+    public void deleteByUserIds(List<String> ids) {
+        for (String id: ids) {
+            deleteByUserId(id);
+        }
+    }
 }

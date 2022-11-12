@@ -1,6 +1,8 @@
 package com.example.aoapay.config;
 
 
+import org.springframework.boot.web.servlet.filter.OrderedHiddenHttpMethodFilter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.*;
@@ -10,6 +12,14 @@ import java.util.List;
 
 @Configuration
 public class AssertConfig implements WebMvcConfigurer {
+//    @Bean
+//    public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
+//        return new OrderedHiddenHttpMethodFilter();
+//    }
+//    @Override
+//    public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer){
+//        WebMvcConfigurer.super.configureDefaultServletHandling(configurer);
+//    }
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/admin/**").addResourceLocations( "classpath:/web/");

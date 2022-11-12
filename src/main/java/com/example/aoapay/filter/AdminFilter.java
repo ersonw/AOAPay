@@ -28,7 +28,6 @@ public class AdminFilter implements Filter {
     @Override
     public void doFilter(ServletRequest req, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         if (req instanceof HttpServletRequest) {
-//            HttpServletRequest request = (HttpServletRequest) req;
             CustomHttpServletRequest request = new CustomHttpServletRequest((HttpServletRequest) req);
             String contentType = request.getContentType();
             String token = request.getHeader("Token");
@@ -43,6 +42,5 @@ public class AdminFilter implements Filter {
     }
     @Override
     public void destroy() {
-
     }
 }
