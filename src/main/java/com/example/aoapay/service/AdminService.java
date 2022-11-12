@@ -184,6 +184,7 @@ public class AdminService {
             }else {
                 orderPage = orderDao.findAllByCompleted(start,end,pageable);
             }
+            count = orderDao.sumMoneyBycompleted(start,end,title);
             JSONArray array = new JSONArray();
             for (Order order: orderPage.getContent()) {
                 JSONObject object = getOrder(order);
@@ -219,6 +220,7 @@ public class AdminService {
             }else {
                 orderPage = orderDao.findAllByProcessed(start,end,pageable);
             }
+            count = orderDao.sumMoneyByprocessed(start,end,title);
             JSONArray array = new JSONArray();
             for (Order order: orderPage.getContent()) {
                 JSONObject object = getOrder(order);

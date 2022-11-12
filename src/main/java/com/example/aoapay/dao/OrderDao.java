@@ -3,6 +3,7 @@ package com.example.aoapay.dao;
 import com.example.aoapay.config.MongoAnimal;
 import com.example.aoapay.table.Order;
 import com.example.aoapay.util.ToolsUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -191,5 +192,52 @@ public class OrderDao extends MongoAnimal<Order> {
         return super.count(super.getMatch(
                 super.where("orderNo").is(orderNo)
         ),super.getGroup());
+    }
+
+    public long sumMoneyBycompleted(Long start, Long end, String title) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        criteriaList.add(super.where("status",true));
+        if (StringUtils.isNotEmpty(title)){
+            criteriaList.add(super.or(
+                    super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
+                    super.where("username").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
+            ));
+        }
+        if (start != null){
+            criteriaList.add(super.where("updateTime").gte(start));
+        }
+        if (end != null){
+            criteriaList.add(super.where("updateTime").lte(end));
+        }
+        Criteria[] params = new Criteria[criteriaList.size()];
+        criteriaList.toArray(params);
+        AggregationOperation mach = super.getMatch(
+                super.and(params)
+        );
+        return super.count(mach,super.getSum("money"));
+    }
+
+    public long sumMoneyByprocessed(Long start, Long end, String title) {
+        List<Criteria> criteriaList = new ArrayList<>();
+        criteriaList.add(super.where("status",false));
+        criteriaList.add(super.where("tradeStatus",true));
+        if (StringUtils.isNotEmpty(title)){
+            criteriaList.add(super.or(
+                    super.where("orderNo").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$"),
+                    super.where("username").regex("^.*" + ToolsUtil.escapeExprSpecialWord(title) + ".*$")
+            ));
+        }
+        if (start != null){
+            criteriaList.add(super.where("addTime").gte(start));
+        }
+        if (end != null){
+            criteriaList.add(super.where("addTime").lte(end));
+        }
+        Criteria[] criterias = new Criteria[criteriaList.size()];
+        criteriaList.toArray(criterias);
+        AggregationOperation mach = super.getMatch(
+                super.and(criterias)
+        );
+        return super.count(mach,super.getSum("money"));
     }
 }
