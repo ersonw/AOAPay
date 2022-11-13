@@ -237,7 +237,13 @@ public class AdminService {
         }
     }
 
-    public ResponseData channelChange(String id, String type, String title, String domain, String mchId, String callbackUrl, String notifyUrl, String secretKey, boolean voluntarily, Integer channel, int max, int mini, int sort, Long limit, String typeCode, List<Integer> amountList,HttpServletRequest request) {
+    public ResponseData channelChange(String id, String type, String title,
+                                      String domain, String mchId, String callbackUrl,
+                                      String notifyUrl, String secretKey,
+                                      boolean voluntarily, Integer channel, int max,
+                                      int mini, int sort, Long limit, String typeCode,
+                                      List<Integer> amountList, boolean enabled,
+                                      HttpServletRequest request) {
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         try {
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
@@ -257,6 +263,7 @@ public class AdminService {
                 list.setNotifyUrl(notifyUrl);
                 list.setSecretKey(secretKey);
             }
+            list.setEnabled(enabled);
             list.setVoluntarily(voluntarily);
             list.setAmountList(amountList);
             list.setMax(max);
@@ -361,7 +368,7 @@ public class AdminService {
         }
     }
 
-    public ResponseData channelAdd(String type, String title, String domain, String mchId, String callbackUrl, String notifyUrl, String secretKey, boolean voluntarily, Integer channel, Integer max, Integer mini, Integer sort, Long limit, String typeCode, List<Integer> amountList, HttpServletRequest request) {
+    public ResponseData channelAdd(String type, String title, String domain, String mchId, String callbackUrl, String notifyUrl, String secretKey, boolean voluntarily, Integer channel, Integer max, Integer mini, Integer sort, Long limit, String typeCode, List<Integer> amountList,boolean enabled ,HttpServletRequest request) {
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         try {
             if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
@@ -377,6 +384,7 @@ public class AdminService {
             list.setCallbackUrl(callbackUrl);
             list.setNotifyUrl(notifyUrl);
             list.setSecretKey(secretKey);
+            list.setEnabled(enabled);
             list.setVoluntarily(voluntarily);
             list.setAmountList(amountList);
             list.setMax(max);

@@ -93,7 +93,7 @@ public class AdminControl {
                 data.getDomain(),data.getMchId(),data.getCallbackUrl(),
                 data.getNotifyUrl(),data.getSecretKey(),data.isVoluntarily(),
                 data.getChannel(),data.getMax(),data.getMini(),data.getSort(),
-                data.getLimit(),data.getTypeCode(),data.getAmountList(),request);
+                data.getLimit(),data.getTypeCode(),data.getAmountList(),data.isEnabled(),request);
     }
     @PostMapping("/channel/add")
     public ResponseData channelAdd(
@@ -104,7 +104,7 @@ public class AdminControl {
                 data.getDomain(),data.getMchId(),data.getCallbackUrl(),
                 data.getNotifyUrl(),data.getSecretKey(),data.isVoluntarily(),
                 data.getChannel(),data.getMax(),data.getMini(),data.getSort(),
-                data.getLimit(),data.getTypeCode(),data.getAmountList(),request);
+                data.getLimit(),data.getTypeCode(),data.getAmountList(),data.isEnabled(),request);
     }
     @PostMapping("/channel/remove")
     public ResponseData channelRemoveAll(
