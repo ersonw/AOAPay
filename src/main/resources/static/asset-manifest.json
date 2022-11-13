@@ -1,18 +1,20 @@
 {
   "files": {
     "main.css": "/static/css/main.c957b5b4.css",
-    "main.js": "/static/js/main.2cfb5588.js",
+    "main.js": "/static/js/main.4530c9d7.js",
     "static/js/787.402b2ae7.chunk.js": "/static/js/787.402b2ae7.chunk.js",
     "static/media/aoa-logo.png": "/static/media/aoa-logo.0eca1f3124c6329fabbb.png",
+    "static/media/jingdong.png": "/static/media/jingdong.b31adca222288786cbe4.png",
     "static/media/taobao.png": "/static/media/taobao.2491077e1458c5495afc.png",
+    "static/media/yunshanfu.png": "/static/media/yunshanfu.8ab4ada453a6c9763034.png",
     "index.html": "/index.html",
     "static/media/AnimatedSwitch.less": "/static/media/AnimatedSwitch.259ad60c93d45ca93d18.less",
     "main.c957b5b4.css.map": "/static/css/main.c957b5b4.css.map",
-    "main.2cfb5588.js.map": "/static/js/main.2cfb5588.js.map",
+    "main.4530c9d7.js.map": "/static/js/main.4530c9d7.js.map",
     "787.402b2ae7.chunk.js.map": "/static/js/787.402b2ae7.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.c957b5b4.css",
-    "static/js/main.2cfb5588.js"
+    "static/js/main.4530c9d7.js"
   ]
 }
