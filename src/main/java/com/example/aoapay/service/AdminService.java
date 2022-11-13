@@ -92,6 +92,13 @@ public class AdminService {
     }
     public JSONObject getOrder(Order order){
         JSONObject object = new JSONObject();
+        object.put("channel","未知第三方");
+        if(StringUtils.isNotEmpty(order.getPayListId())){
+            PayList list = payListDao.findById(order.getPayListId());
+            if (list != null){
+                object.put("channel",list.getTitle());
+            }
+        }
         object.put("id",order.getId());
         object.put("orderNo",order.getOrderNo());
         object.put("outTradeNo",order.getOutTradeNo());
