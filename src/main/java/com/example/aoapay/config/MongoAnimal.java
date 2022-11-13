@@ -246,7 +246,7 @@ public class MongoAnimal<T> {
     }
     public void saveAll(List<T> objects) {
         for (Object object: objects) {
-            mongoTemplate.remove(object);
+            mongoTemplate.save(object);
         }
     }
     public void delete(T object) {
