@@ -78,14 +78,7 @@ public class AdminService {
         RequestHeader header = ToolsUtil.getRequestHeaders(request);
         try{
             User user = userService.authUser(username,password,header);
-            JSONObject object = new JSONObject();
-            object.put("username", user.getUsername());
-            object.put("superAdmin",user.isSuperAdmin());
-            object.put("admin", user.isAdmin());
-            object.put("avatar", user.getAvatar());
-            object.put("token",user.getToken());
-            object.put("permissions", RoleUtil.getPermissions(user));
-            return ResponseData.success(object);
+            return ResponseData.success(getUserInfo(user));
         }catch (Exception e){
             return ResponseData.error(201,"错误："+e.getMessage());
         }
@@ -922,6 +915,44 @@ public class AdminService {
             userDao.save(u);
             authDao.removeUser(authDao.findUserByUserId(u.getId()));
             return ResponseData.success("修改超级管理员权限成功!",getUser(u));
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    public ResponseData userRemark(String remark, HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error(201,"未登录用户");
+            User user = header.getUser();
+            user.setRemark(remark);
+            userDao.save(user);
+            authDao.removeUser(authDao.findUserByUserId(user.getId()));
+            return ResponseData.success("修改备注成功!",getUserInfo(user));
+        }catch (Exception e){
+            return ResponseData.error("错误提示："+e.getMessage());
+        }
+    }
+
+    private JSONObject getUserInfo(User user) {
+        JSONObject object = new JSONObject();
+        object.put("username", user.getUsername());
+        object.put("superAdmin",user.isSuperAdmin());
+        object.put("admin", user.isAdmin());
+        object.put("avatar", user.getAvatar());
+        object.put("token",user.getToken());
+//        object.put("remark",user.getRemark());
+        object.put("permissions", RoleUtil.getPermissions(user));
+        return object;
+    }
+
+    public ResponseData userLogout(HttpServletRequest request) {
+        RequestHeader header = ToolsUtil.getRequestHeaders(request);
+        try {
+            if (header.getUser() == null) return ResponseData.error("未登录用户");
+            User user = header.getUser();
+            authDao.removeUser(authDao.findUserByUserId(user.getId()));
+            return ResponseData.success("注销登录成功!");
         }catch (Exception e){
             return ResponseData.error("错误提示："+e.getMessage());
         }

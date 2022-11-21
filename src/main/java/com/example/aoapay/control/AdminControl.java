@@ -164,6 +164,17 @@ public class AdminControl {
     ){
         return service.userRemoveAll(data.getIds(),request);
     }
+    @PostMapping("/user/remark")
+    public ResponseData userRemark(
+            @ModelAttribute pData data,
+            HttpServletRequest request
+    ){
+        return service.userRemark(data.getRemark(),request);
+    }
+    @GetMapping("/user/logout")
+    public ResponseData userLogout(HttpServletRequest request){
+        return service.userLogout(request);
+    }
     @GetMapping("/router/list")
     public ResponseData routerList(
             @RequestParam(value="title", required = false) String title,

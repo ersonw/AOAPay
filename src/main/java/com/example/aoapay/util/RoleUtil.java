@@ -20,6 +20,7 @@ public class RoleUtil {
         array.add(getChannel());
         array.add(getUser());
         array.add(getRole(0));
+        array.add(getUserInfo());
         return array;
     }
     public static JSONArray getAdminRouterList(){
@@ -30,6 +31,7 @@ public class RoleUtil {
         array.add(getOrder(0));
         array.add(getChannel());
         array.add(getUser());
+        array.add(getUserInfo());
         return array;
     }
     public static JSONArray getUserRouterList(){
@@ -38,6 +40,7 @@ public class RoleUtil {
         array.add(getClient());
         array.add(getShortLink(1));
         array.add(getOrder(3));
+        array.add(getUserInfo());
         return array;
     }
     public static JSONObject getShortLink(int level){
@@ -73,6 +76,13 @@ public class RoleUtil {
         object.put("title","首页");
         object.put("key","/app/dashboard/index");
         object.put("component","Dashboard");
+        return object;
+    }
+    public static JSONObject getUserInfo(){
+        JSONObject object = new JSONObject();
+        object.put("title","个人资料");
+        object.put("key","/app/user/info");
+        object.put("component","UserInfo");
         return object;
     }
     public static JSONObject getClient(){
