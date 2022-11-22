@@ -24,7 +24,8 @@ public class DandelionUtil {
         data.put("remark","(" + order.getName()+")"+order.getUsername());
 //        data.put("numf", "1234");
         data.put("country", "china");
-        data.put("sname",order.getClientId());
+//        data.put("sname",order.getClientId());
+        data.put("sname",order.getName());
         data.put("sign",  getSign(data,payList));
         String result = ToolsUtil.doPost(payList.getDomain(), data);
         if (StringUtils.isEmpty(result)) throw new Exception("result null");
